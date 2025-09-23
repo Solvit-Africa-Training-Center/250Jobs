@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+/* Ensure emoji-capable fonts to avoid tofu/question marks */
+.emoji-font {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji',
+    sans-serif;
+}
+
+/* Light/Dark defaults */
+html.dark { color-scheme: dark; }
+body { @apply bg-white text-gray-900; }
+html.dark body { @apply bg-gray-900 text-gray-100; }
+/* Prevent browser scroll anchoring from shifting viewport on tab switches */
+.no-anchor { overflow-anchor: none; }
+
+/* Simple organic blob animation for hero background */
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.98); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+.animate-blob { animation: blob 12s infinite; }
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }

@@ -39,6 +39,17 @@ export default tseslint.config([
 ])
 ```
 
+## API Integration (Axios)
+
+- Base URL is configured via `VITE_API_BASE_URL` (see `.env.example`).
+- An Axios instance is in `src/lib/http.ts` with optional auth header injection from `localStorage` using `VITE_AUTH_TOKEN_KEY` (defaults to `accessToken`).
+- Example usage is in `src/api/technicians.ts` and consumed by `src/components/Technicians/TechProfile.tsx`.
+
+Setup:
+- Copy `.env.example` to `.env.local` and set `VITE_API_BASE_URL` to your backend (e.g., `http://127.0.0.1:8000/api`).
+- If your backend requires a bearer token, put it in `localStorage` under the key in `VITE_AUTH_TOKEN_KEY` (default: `accessToken`).
+
+
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js
