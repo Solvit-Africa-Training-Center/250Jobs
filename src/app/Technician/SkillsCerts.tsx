@@ -1,4 +1,5 @@
 import { LiaCertificateSolid } from "react-icons/lia";
+import { FiTrash2 } from "react-icons/fi";
 import { useEffect, useMemo, useState } from "react";
 import { getCurrentTechnician, updateCurrentTechnician, uploadCertificate } from "../../api/technicians";
 import type { TechnicianProfile } from "../../types/technician";
@@ -18,6 +19,8 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
   const [localCertUrl, setLocalCertUrl] = useState<string | null>(null);
   const [localCertDataUrl, setLocalCertDataUrl] = useState<string | null>(null);
   const [serverCertOk, setServerCertOk] = useState<boolean | null>(null);
+  // keep track of a preview of the current file selection
+  // (existing previewUrl covers single-selection preview)
 
   const storageKey = useMemo(() => {
     const uid = localStorage.getItem("authUserId");
@@ -28,6 +31,7 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
     return uid ? `technicianCertData:${uid}` : null;
   }, []);
   const lastDataKey = "technicianCertData:last";
+  // no list key now; single preview/upload only
 
   const load = async () => {
     setError(null);
@@ -42,6 +46,7 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
       // Load cached data URI (works offline / no backend media serving)
       const cachedData = storageKeyData ? localStorage.getItem(storageKeyData) : localStorage.getItem(lastDataKey);
       if (cachedData) setLocalCertDataUrl(cachedData);
+      // skip loading lists — we only show primary and a single preview
     } catch (e: any) {
       setError(e?.message || "Failed to load profile");
     }
@@ -111,6 +116,11 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
         localStorage.setItem(lastDataKey, localCertDataUrl);
       }
       setMessage("Certificate uploaded");
+      // Persist preview data URL so it survives reloads (single)
+      if (storageKeyData && localCertDataUrl) {
+        localStorage.setItem(storageKeyData, localCertDataUrl);
+        localStorage.setItem(lastDataKey, localCertDataUrl);
+      }
     } catch (e: any) {
       setError(e?.message || "Failed to upload certificate");
     } finally {
@@ -118,31 +128,26 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
     }
   };
 
-  const onPickFile = (file: File | null) => {
-    setCertFile(file);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
-    if (file) {
-      try {
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-      } catch {
-        // ignore
-      }
-      // Also read as data URL for persistent local viewing
-      try {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = typeof reader.result === 'string' ? reader.result : null;
-          setLocalCertDataUrl(result);
-        };
-        reader.readAsDataURL(file);
-      } catch {
-        // ignore
-      }
-    }
+  const onPickFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const first = files[0];
+    setCertFile(first);
+    // preview only the first selected file
+    try {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      const url = URL.createObjectURL(first);
+      setPreviewUrl(url);
+    } catch {}
+    // also keep a data URL for upload confirmation (single)
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = typeof reader.result === 'string' ? reader.result : null;
+        if (!result) return;
+        setLocalCertDataUrl(result);
+      };
+      reader.readAsDataURL(first);
+    } catch {}
   };
 
   const isImageUrl = (url: string) => {
@@ -252,47 +257,71 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
             </div>
           )}
 
-          {localCertDataUrl ? (
-            isImageUrl(localCertDataUrl) ? (
-              <a href={localCertDataUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-3">
-                <img src={localCertDataUrl} alt="Certificate (cached)" className="h-28 w-auto rounded border border-gray-200" />
-              </a>
-            ) : (
-              <a href={localCertDataUrl} target="_blank" className="flex items-center gap-2 px-4 py-4 bg-[#f5f5fc] text-blue-700 rounded-lg text-sm font-semibold" rel="noreferrer">
-                <LiaCertificateSolid className="text-blue-600 text-lg" />
-                View certificate (cached)
-              </a>
-            )
-          ) : profile?.certificates && serverCertOk !== false ? (
+          {profile?.certificates && serverCertOk !== false ? (
             isImageUrl(profile.certificates) ? (
-              <a href={fixLegacyCertPath(profile.certificates) || undefined} target="_blank" rel="noreferrer" className="inline-flex items-center gap-3">
-                <img src={fixLegacyCertPath(profile.certificates) || undefined} alt="Certificate" className="h-28 w-auto rounded border border-gray-200" />
-              </a>
+              <div className="flex items-center gap-3">
+                <a href={fixLegacyCertPath(profile.certificates) || undefined} target="_blank" rel="noreferrer" className="inline-flex items-center gap-3">
+                  <img src={fixLegacyCertPath(profile.certificates) || undefined} alt="Certificate" className="h-28 w-auto rounded border border-gray-200" />
+                </a>
+                {editMode && (
+                  <Button
+                    variant="outline"
+                    className="border-red-300 !text-red-700 hover:!bg-red-50 hover:!text-red-800 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200 transition-colors"
+                    leftIcon={<FiTrash2 className="text-red-600" />}
+                    onClick={async () => {
+                    try {
+                      setSaving(true);
+                      const updated = await updateCurrentTechnician({ certificates: null } as any);
+                      setProfile(updated);
+                      onUpdated && onUpdated(updated);
+                      setMessage("Certificate removed");
+                      setLocalCertUrl(null);
+                      if (storageKey) localStorage.removeItem(storageKey);
+                    } catch (e: any) {
+                      setError(e?.message || 'Failed to remove certificate');
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}>Remove</Button>
+                )}
+              </div>
             ) : (
-              <a href={fixLegacyCertPath(profile.certificates) || undefined} target="_blank" className="flex items-center gap-2 px-4 py-4 bg-[#f5f5fc] text-blue-700 rounded-lg text-sm font-semibold" rel="noreferrer">
-                <LiaCertificateSolid className="text-blue-600 text-lg" />
-                View current certificate
-              </a>
-            )
-          ) : localCertUrl ? (
-            isImageUrl(localCertUrl) ? (
-              <a href={fixLegacyCertPath(localCertUrl) || undefined} target="_blank" rel="noreferrer" className="inline-flex items-center gap-3">
-                <img src={fixLegacyCertPath(localCertUrl) || undefined} alt="Certificate (cached)" className="h-28 w-auto rounded border border-gray-200" />
-              </a>
-            ) : (
-              <a href={fixLegacyCertPath(localCertUrl) || undefined} target="_blank" className="flex items-center gap-2 px-4 py-4 bg-[#f5f5fc] text-blue-700 rounded-lg text-sm font-semibold" rel="noreferrer">
-                <LiaCertificateSolid className="text-blue-600 text-lg" />
-                View certificate (cached)
-              </a>
+              <div className="flex items-center gap-3">
+                <a href={fixLegacyCertPath(profile.certificates) || undefined} target="_blank" className="flex items-center gap-2 px-4 py-4 bg-[#f5f5fc] text-blue-700 rounded-lg text-sm font-semibold" rel="noreferrer">
+                  <LiaCertificateSolid className="text-blue-600 text-lg" />
+                  View current certificate
+                </a>
+                {editMode && (
+                  <Button
+                    variant="outline"
+                    className="border-red-300 !text-red-700 hover:!bg-red-50 hover:!text-red-800 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200 transition-colors"
+                    leftIcon={<FiTrash2 className="text-red-600" />}
+                    onClick={async () => {
+                    try {
+                      setSaving(true);
+                      const updated = await updateCurrentTechnician({ certificates: null } as any);
+                      setProfile(updated);
+                      onUpdated && onUpdated(updated);
+                      setMessage("Certificate removed");
+                    } catch (e: any) {
+                      setError(e?.message || 'Failed to remove certificate');
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}>Remove</Button>
+                )}
+              </div>
             )
           ) : (
             <span className="text-gray-500">{serverCertOk === false ? 'Certificate link unavailable on server. Please re-upload.' : 'No certificate uploaded.'}</span>
           )}
+          
         </div>
 
         <div className="mt-4 flex items-center gap-2">
-          <input type="file" onChange={(e) => onPickFile(e.target.files?.[0] || null)} className="block text-sm" accept="application/pdf,image/*" />
-          <Button onClick={onUploadCert} loading={saving} disabled={!certFile}>Upload</Button>
+          <input type="file" multiple onChange={(e) => onPickFiles(e.target.files)} className="block text-sm" accept="application/pdf,image/*" disabled={!editMode} />
+          <Button onClick={onUploadCert} loading={saving} disabled={!editMode || !certFile} className="!text-black hover:!text-black">Upload Selected</Button>
+          {!editMode && <span className="text-xs text-gray-500">Click Edit to manage certificates</span>}
         </div>
       </div>
     </div>

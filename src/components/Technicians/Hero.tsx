@@ -15,6 +15,7 @@ function Hero({ activePage, setActivePage }: HeroProps) {
     >
       <div className="absolute inset-0 bg-[#F8FCFF] pointer-events-none" />
       <div className="relative max-w-5xl mx-auto flex flex-col-reverse md:flex-row items-center justify-between gap-8">
+        
         <div className="flex-1 space-y-6">
           <h1 className="text-4xl md:text-4xl font-bold">
             <span className="text-black">{`Welcome Back${user?.username ? ", " + user.username : ""}!`}</span>
@@ -52,8 +53,9 @@ function Hero({ activePage, setActivePage }: HeroProps) {
               Messages
             </Link>
           </div>
-        
         </div>
+
+
       </div>
     </section>
   );

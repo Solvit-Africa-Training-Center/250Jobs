@@ -5,6 +5,13 @@ import { GoXCircle } from "react-icons/go";
 import { useEffect, useState } from "react";
 import { myApplications } from "../../api/jobs";
 import type { JobApplication, Paginated } from "../../types/job";
+import Button from "../../components/ui/Button";
+import Modal from "../../components/ui/Modal";
+import { CiLocationOn } from "react-icons/ci";
+import { MdOutlineWorkOutline } from "react-icons/md";
+import { LuDollarSign } from "react-icons/lu";
+import { getJob } from "../../api/jobs";
+import type { Job } from "../../types/job";
 
 function statusBadge(status: string) {
   const map: Record<string, { bg: string; text: string; label: string; icon?: JSX.Element }> = {
@@ -17,11 +24,44 @@ function statusBadge(status: string) {
   return <span className={`inline-flex items-center px-4 h-8 text-xs font-medium ${s.bg} ${s.text} rounded-2xl`}>{s.icon}<span className="ml-1">{s.label}</span></span>;
 }
 
+//
+
 function MyApplication() {
   const [page, setPage] = useState(1);
   const [data, setData] = useState<Paginated<JobApplication> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selected, setSelected] = useState<JobApplication | null>(null);
+  const [jobDetail, setJobDetail] = useState<Job | null>(null);
+  const [jobLoading, setJobLoading] = useState(false);
+  const [jobError, setJobError] = useState<string | null>(null);
+
+  const fmtDate = (iso?: string, withTime = false) => {
+    if (!iso) return "—";
+    try {
+      const d = new Date(iso);
+      return withTime ? d.toLocaleString() : d.toLocaleDateString();
+    } catch {
+      return iso || "—";
+    }
+  };
+
+  const openDetails = async (app: JobApplication) => {
+    setSelected(app);
+    setJobError(null);
+    setJobDetail(null);
+    setDetailOpen(true);
+    try {
+      setJobLoading(true);
+      const detail = await getJob(app.job);
+      setJobDetail(detail);
+    } catch (e: any) {
+      setJobError(e?.message || "Failed to load job details");
+    } finally {
+      setJobLoading(false);
+    }
+  };
 
   const fetchData = async (p: number) => {
     setLoading(true);
@@ -49,28 +89,28 @@ function MyApplication() {
           {loading && <div className="h-6" />}
           {error && <div className="text-red-600">{error}</div>}
 
+
           {!loading && !error && data?.results.map((app) => (
-            <div key={app.id}
-              className="bg-white rounded-2xl p-6 border border-gray-300"
+            <div
+              key={app.id}
+              className={"bg-white rounded-2xl p-6 border border-gray-300"}
               style={{ boxShadow: "0px 0px 0px 1px rgba(0, 0, 0, 0.08)" }}
+              onClick={() => openDetails(app)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter') openDetails(app); }}
             >
-              <div className="flex justify-between">
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-1">{app.job_title}</h3>
+                  <h3 className="text-xl font-semibold text-gray-900">{app.job_title}</h3>
+                  <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
+                    <IoTimeOutline className="text-gray-500" /> Applied {fmtDate(app.created_at)}
+                  </div>
                 </div>
-                {statusBadge(app.status)}
+                <div className="shrink-0">{statusBadge(app.status)}</div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-                <div className="flex items-center gap-2">
-                  <IoTimeOutline className="text-2xl text-gray-500" />
-                  <span>Applied {new Date(app.created_at).toLocaleDateString()}</span>
-                </div>
-              </div>
-
-              {app.cover_letter && (
-                <p className="text-gray-800 bg-[#ECECF0] rounded-2xl p-4 mb-4">{app.cover_letter}</p>
-              )}
+              {/* Link removed; entire card already opens details on click */}
             </div>
           ))}
 
@@ -78,8 +118,11 @@ function MyApplication() {
 
         </div>
       </div>
+
+      {/* Details view removed as requested */}
     </section>
   );
 }
 
 export default MyApplication;
+
