@@ -1,6 +1,7 @@
 import http from "../lib/http";
 import type { EmployerProfile, TechnicianMini, EmployerApplication, Paginated } from "../types/employer";
 import type { Job } from "../types/job";
+import type { ReviewItem } from "./technicians";
 
 // Employer profile
 export async function getEmployerMe(): Promise<EmployerProfile> {
@@ -66,5 +67,10 @@ export async function setApplicantStatus(applicationId: number, newStatus: "SHOR
     `/employers/applicants/${applicationId}/status/${newStatus}/`,
     {}
   );
+  return res.data;
+}
+
+export async function createTechnicianReview(technicianId: number, payload: { rating: number; comment?: string }): Promise<ReviewItem> {
+  const res = await http.post<ReviewItem>(`/employers/technicians/${technicianId}/reviews/`, payload);
   return res.data;
 }

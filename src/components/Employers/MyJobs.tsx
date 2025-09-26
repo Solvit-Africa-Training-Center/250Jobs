@@ -22,6 +22,8 @@ function MyJobs() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", category: "", location: "", budget: 0, currency: "RWF" });
 
+  const primaryBtnClass = "!bg-[#1877D3] !text-white hover:!bg-[#1361aa] focus:!ring-2 focus:!ring-[#9ec9f5] dark:!bg-[#145ea8] dark:hover:!bg-[#0f4c88] dark:focus:!ring-[#1e3a8a]";
+
   const fetchJobs = async () => {
     setLoading(true);
     setError(null);
@@ -85,61 +87,61 @@ function MyJobs() {
   };
 
   return (
-    <div className="flex flex-col-reverse md:flex-row items-start gap-8 px-4 md:px-16 pb-12">
+    <div className="flex flex-col-reverse md:flex-row items-start gap-8 px-4 md:px-16 pb-12 dark:text-gray-100">
       <div className="flex-1 space-y-6">
         <div className="flex justify-between">
-          <h2 className="text-2xl font-bold text-black">Posted Jobs</h2>
+          <h2 className="text-2xl font-bold text-black dark:text-gray-100">Posted Jobs</h2>
           <div className="space-x-2 flex items-center">
-            <Button className="flex items-center gap-2" onClick={openCreate}>
+            <Button className="flex items-center gap-2 !bg-[#1877D3] !text-white hover:!bg-[#1361aa] focus:!ring-2 focus:!ring-[#9ec9f5]" onClick={openCreate}>
               <MdAdd className="text-lg" />
               Post New Job
             </Button>
           </div>
         </div>
 
-        {loading && <div className="text-gray-600">Loading jobs...</div>}
+        {loading && <div className="text-gray-600 dark:text-gray-300">Loading jobs...</div>}
         {error && <div className="text-red-600">{error}</div>}
 
         {!loading && !error && jobs.map((job) => (
-          <div key={job.id} className="bg-white rounded-2xl p-6 transition border border-gray-300" style={{ boxShadow: "0px 2px 2px 2px rgba(0, 0, 0, 0.08)" }}>
+          <div key={job.id} className="bg-white rounded-2xl p-6 transition border border-gray-300 dark:bg-gray-900 dark:border-gray-700" style={{ boxShadow: "0px 2px 2px 2px rgba(0, 0, 0, 0.08)" }}>
             <div className="flex justify-between">
-              <h3 className="text-xl font-semibold text-gray-900 mb-1">{job.title}</h3>
-              <p className="border border-gray-200 px-2 py-1 text-black font-semibold rounded-md text-sm">
+              <h3 className="text-xl font-semibold text-gray-900 mb-1 dark:text-gray-100">{job.title}</h3>
+              <p className="border border-gray-200 dark:border-gray-700 px-2 py-1 text-black font-semibold dark:text-gray-100 rounded-md text-sm">
                 {job.is_active ? "Active" : "Inactive"}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4 mt-2">
+            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-300 mb-4 mt-2">
               <div className="flex items-center gap-2">
-                <CiLocationOn className="text-lg text-gray-500" />
+                <CiLocationOn className="text-lg text-gray-500 dark:text-gray-400" />
                 <span>{job.location}</span>
               </div>
               <div className="flex items-center gap-2">
-                <LuDollarSign className="text-lg text-gray-500" />
+                <LuDollarSign className="text-lg text-gray-500 dark:text-gray-400" />
                 <span>{job.currency} {job.budget}</span>
               </div>
               <div className="flex items-center gap-2">
-                <IoTimeOutline className="text-lg text-gray-500" />
+                <IoTimeOutline className="text-lg text-gray-500 dark:text-gray-400" />
                 <span>{new Date(job.created_at).toLocaleDateString()}</span>
               </div>
               <div className="flex items-center gap-2">
-                <FiUsers className="text-lg text-gray-500" />
+                <FiUsers className="text-lg text-gray-500 dark:text-gray-400" />
                 <span>{job.applications_count} applicants</span>
               </div>
             </div>
 
-            <p className="text-gray-800 pt-2 mb-4 line-clamp-3">{job.description}</p>
+            <p className="text-gray-800 dark:text-gray-200 pt-2 mb-4 line-clamp-3">{job.description}</p>
 
             <div className="flex gap-3 items-center pt-2">
               <Button
                 variant="outline"
                 className="!text-black hover:!text-black bg-transparent hover:!bg-transparent border border-gray-400"
-                leftIcon={<FiEye className="text-black" />}
+                leftIcon={<FiEye className="text-black dark:text-gray-100" />}
                 onClick={() => openDetail(job.id)}
               >
                 View Details
               </Button>
-              <Button variant="secondary" onClick={() => openEdit(job)}>Edit Job</Button>
+              <Button className={primaryBtnClass} onClick={() => openEdit(job)}>Edit Job</Button>
             </div>
           </div>
         ))}
@@ -153,131 +155,132 @@ function MyJobs() {
           <Input label="Budget" type="number" value={form.budget as any} onChange={(e) => setForm((f) => ({ ...f, budget: Number(e.target.value) }))} />
           <Input label="Currency" value={form.currency} onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))} />
           <label className="block">
-            <span className="block mb-1 text-sm font-medium text-gray-700">Description</span>
+            <span className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">Description</span>
             <textarea className="w-full bg-gray-100 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" rows={5} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
           </label>
           <div className="pt-2">
-            <Button type="submit" loading={saving}>{editing ? "Save Changes" : "Create Job"}</Button>
+            <Button type="submit" className={primaryBtnClass} loading={saving}>{editing ? "Save Changes" : "Create Job"}</Button>
           </div>
         </form>
       </Modal>
 
-    <Modal open={detailOpen} onClose={() => setDetailOpen(false)} title={detail?.title || "Job Details"} maxWidthClass="max-w-4xl">
-  {detail ? (
-    <div className="space-y-6 bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border border-gray-200">
-      {/* Header Section */}
-      <div className="flex justify-between items-start pb-4 border-b border-gray-200">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{detail.title}</h2>
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <span className="flex items-center gap-1">
-              <CiLocationOn className="text-blue-500" />
-              {detail.location}
-            </span>
-            <span className="flex items-center gap-1">
-              <FiUsers className="text-green-500" />
-              {detail.applications_count} applicants
-            </span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              detail.is_active 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {detail.is_active ? 'Active' : 'Inactive'}
-            </span>
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-blue-600">{detail.currency} {detail.budget}</div>
-          <div className="text-sm text-gray-500">Budget</div>
-        </div>
-      </div>
+        <Modal
+      open={detailOpen}
+      onClose={() => setDetailOpen(false)}
+      title={detail?.title || "Job Details"}
+      maxWidthClass="max-w-4xl"
+    >
+      {detail ? (
+        <div className="space-y-6 text-gray-700 dark:text-gray-200">
+          <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold text-gray-900">{detail.title}</h2>
+                <div className="flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-300">
+                  <span className="flex items-center gap-1">
+                    <CiLocationOn className="text-blue-500" />
+                    {detail.location || "Location not provided"}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <FiUsers className="text-green-500" />
+                    {detail.applications_count} applicants
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <IoTimeOutline className="text-gray-500 dark:text-gray-400" />
+                    Posted {detail.created_at ? new Date(detail.created_at).toLocaleDateString() : "-"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col items-start md:items-end gap-2">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    detail.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {detail.is_active ? "Active" : "Inactive"}
+                </span>
+                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {detail.currency} {detail.budget}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Budget</div>
+              </div>
+            </div>
+          </section>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4">
-        <div className="text-center p-3 bg-blue-50 rounded-lg">
-          <div className="text-blue-600 font-semibold">{detail.category}</div>
-          <div className="text-xs text-gray-600">Category</div>
-        </div>
-        <div className="text-center p-3 bg-green-50 rounded-lg">
-          <div className="text-green-600 font-semibold">{new Date(detail.created_at).toLocaleDateString()}</div>
-          <div className="text-xs text-gray-600">Posted Date</div>
-        </div>
-        <div className="text-center p-3 bg-purple-50 rounded-lg">
-          <div className="text-purple-600 font-semibold">{detail.employment_type || 'Not specified'}</div>
-          <div className="text-xs text-gray-600">Employment Type</div>
-        </div>
-        <div className="text-center p-3 bg-orange-50 rounded-lg">
-          <div className="text-orange-600 font-semibold">{detail.duration || 'Ongoing'}</div>
-          <div className="text-xs text-gray-600">Duration</div>
-        </div>
-      </div>
-
-      {/* Description Section */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-          Job Description
-        </h3>
-        <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-          {detail.description}
-        </div>
-      </div>
-
-     
-
-      {/* Additional Information */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <IoTimeOutline className="text-blue-500" />
-            Timeline
-          </h4>
-          <div className="text-sm text-gray-600">
-            <div>Posted: {new Date(detail.created_at).toLocaleDateString()}</div>
-            {detail.updated_at && (
-              <div>Updated: {new Date(detail.updated_at).toLocaleDateString()}</div>
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm text-center">
+              <div className="text-sm text-gray-500 dark:text-gray-400">Category</div>
+              <div className="mt-1 font-semibold text-gray-900">{detail.category}</div>
+            </div>
+            {detail.employment_type && (
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm text-center">
+                <div className="text-sm text-gray-500 dark:text-gray-400">Employment Type</div>
+                <div className="mt-1 font-semibold text-gray-900">{detail.employment_type}</div>
+              </div>
             )}
+            {detail.duration && (
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm text-center">
+                <div className="text-sm text-gray-500 dark:text-gray-400">Duration</div>
+                <div className="mt-1 font-semibold text-gray-900">{detail.duration}</div>
+              </div>
+            )}
+            {detail.updated_at && (
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm text-center">
+                <div className="text-sm text-gray-500 dark:text-gray-400">Last Updated</div>
+                <div className="mt-1 font-semibold text-gray-900">
+                  {new Date(detail.updated_at).toLocaleDateString()}
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#1877D3]" />
+              Job Description
+            </h3>
+            <p className="mt-3 whitespace-pre-line text-sm leading-relaxed">
+              {detail.description}
+            </p>
+          </section>
+
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
+              <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                <LuDollarSign className="text-green-600" />
+                Compensation
+              </h4>
+              <div className="mt-2 space-y-1 text-sm">
+                <div>Budget: {detail.currency} {detail.budget}</div>
+                <div>Payment terms: {detail.payment_terms || "To be discussed"}</div>
+              </div>
+            </div>
+          </section>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              className={primaryBtnClass}
+              onClick={() => setDetailOpen(false)}
+            >
+              Close
+            </Button>
+            <Button
+              className={primaryBtnClass}
+              onClick={() => {
+                setDetailOpen(false);
+                openEdit(detail);
+              }}
+            >
+              Edit Job
+            </Button>
           </div>
         </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <LuDollarSign className="text-green-500" />
-            Compensation
-          </h4>
-          <div className="text-sm text-gray-600">
-            <div>Budget: {detail.currency} {detail.budget}</div>
-            <div>Payment terms: {detail.payment_terms || 'To be discussed'}</div>
-          </div>
+      ) : (
+        <div className="flex items-center justify-center py-12 text-sm text-gray-500 dark:text-gray-400">
+          Loading job details...
         </div>
-      </div>
-
-{/* Action Buttons */}
-<div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-  <Button 
-    variant="outline" 
-    className="!text-black hover:!text-white" 
-    onClick={() => setDetailOpen(false)}
-  >
-    Close
-  </Button>
-  <Button variant="primary" onClick={() => {
-    setDetailOpen(false);
-    openEdit(detail);
-  }}>
-    Edit Job
-  </Button>
-</div>
-
-
-    </div>
-  ) : (
-    <div className="flex justify-center items-center py-12">
-      <div className="text-gray-600">Loading job details...</div>
-    </div>
-  )}
-</Modal>
+      )}
+    </Modal>
 
 
 
@@ -286,3 +289,8 @@ function MyJobs() {
 }
 
 export default MyJobs;
+
+
+
+
+

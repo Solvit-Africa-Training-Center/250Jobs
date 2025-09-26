@@ -44,14 +44,14 @@ export default function AdminSubscriptions({ embedded = false }: { embedded?: bo
     return <div className="w-2 h-2 bg-gray-500 rounded-full"></div>;
   };
 
-  // Calculate statistics
+  
   const totalRevenue = items.reduce((sum, item) => sum + (item.amount || 0), 0);
   const activeSubscriptions = items.filter(item => item.status.toLowerCase() === "active").length;
   const expiredSubscriptions = items.filter(item => item.status.toLowerCase() === "expired").length;
 
   const content = (
     <div className="space-y-6">
-      {/* Header Section */}
+   
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Subscription Management</h2>
@@ -60,7 +60,7 @@ export default function AdminSubscriptions({ embedded = false }: { embedded?: bo
        
       </div>
 
-      {/* Statistics Cards */}
+    
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
           <div className="flex items-center justify-between">
@@ -99,7 +99,7 @@ export default function AdminSubscriptions({ embedded = false }: { embedded?: bo
         </div>
       </div>
 
-      {/* Loading State */}
+     
       {loading && (
         <div className="flex justify-center items-center py-12">
           <div className="text-center">
@@ -109,7 +109,7 @@ export default function AdminSubscriptions({ embedded = false }: { embedded?: bo
         </div>
       )}
 
-      {/* Error State */}
+    
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-6">
           <div className="flex items-center gap-3">
@@ -124,7 +124,7 @@ export default function AdminSubscriptions({ embedded = false }: { embedded?: bo
         </div>
       )}
 
-      {/* Table */}
+    
       {!loading && !error && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">

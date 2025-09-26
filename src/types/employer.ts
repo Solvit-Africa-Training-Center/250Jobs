@@ -9,6 +9,7 @@ export interface EmployerProfile {
 export interface SkillMini { id: number; name: string }
 
 export interface TechnicianMini {
+  id: number;
   user_id: number;
   first_name: string;
   last_name: string;

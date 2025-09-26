@@ -11,6 +11,58 @@
 html.dark { color-scheme: dark; }
 body { @apply bg-white text-gray-900; }
 html.dark body { @apply bg-gray-900 text-gray-100; }
+
+/* Common dark-surface overrides so light theme stays untouched */
+html.dark .bg-white,
+html.dark .bg-gray-50 {
+  background-color: #111827;
+}
+html.dark .bg-gray-100,
+html.dark .bg-[#F8FCFF],
+html.dark .bg-[#ECECF0],
+html.dark .bg-[#f5f5fc] {
+  background-color: #1f2937;
+}
+html.dark .text-black,
+html.dark .text-gray-900 {
+  color: #f9fafb;
+}
+html.dark .text-gray-800 {
+  color: #f3f4f6;
+}
+html.dark .text-gray-700 {
+  color: #e5e7eb;
+}
+html.dark .text-gray-600 {
+  color: #d1d5db;
+}
+html.dark .text-gray-500 {
+  color: #94a3b8;
+}
+html.dark .border-gray-200 {
+  border-color: #1f2937;
+}
+html.dark .border-gray-300 {
+  border-color: #374151;
+}
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #111827;
+  color: #f9fafb;
+  border-color: #374151;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #94a3b8;
+}
+html.dark input:focus,
+html.dark textarea:focus,
+html.dark select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
 /* Prevent browser scroll anchoring from shifting viewport on tab switches */
 .no-anchor { overflow-anchor: none; }
 
@@ -24,3 +76,44 @@ html.dark body { @apply bg-gray-900 text-gray-100; }
 .animate-blob { animation: blob 12s infinite; }
 .animation-delay-2000 { animation-delay: 2s; }
 .animation-delay-4000 { animation-delay: 4s; }
+/* Light-only surfaces */
+html.dark .login-page {
+  background-color: #f9fafb;
+  color: #111827;
+}
+html.dark .login-page .bg-white {
+  background-color: #ffffff !important;
+}
+html.dark .login-page .text-gray-800 {
+  color: #1f2937 !important;
+}
+html.dark .login-page .text-gray-600,
+html.dark .login-page .text-gray-500 {
+  color: #4b5563 !important;
+}
+html.dark .login-page .text-red-700 {
+  color: #b91c1c !important;
+}
+html.dark .login-page .bg-red-50 {
+  background-color: #fef2f2 !important;
+}
+
+
+html.dark .login-page .border-gray-300 {
+  border-color: #d1d5db !important;
+}
+html.dark .login-page .border-red-200 {
+  border-color: #fecaca !important;
+}
+html.dark .login-page input,
+html.dark .login-page textarea,
+html.dark .login-page select {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
+}
+html.dark .login-page input::placeholder {
+  color: #9ca3af !important;
+}
+
+

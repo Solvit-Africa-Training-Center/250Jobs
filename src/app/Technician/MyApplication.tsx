@@ -7,6 +7,7 @@ import { myApplications } from "../../api/jobs";
 import type { JobApplication, Paginated } from "../../types/job";
 import Button from "../../components/ui/Button";
 import Modal from "../../components/ui/Modal";
+import { useTheme } from "../../context/ThemeContext";
 import { CiLocationOn } from "react-icons/ci";
 import { MdOutlineWorkOutline } from "react-icons/md";
 import { LuDollarSign } from "react-icons/lu";
@@ -27,6 +28,14 @@ function statusBadge(status: string) {
 //
 
 function MyApplication() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const cardSurfaceClass = isDark ? "bg-gray-900 border border-gray-700 text-gray-100" : "bg-white border border-gray-300 text-gray-900";
+  const mutedText = isDark ? "text-gray-400" : "text-gray-600";
+  const detailMutedText = isDark ? "text-gray-400" : "text-gray-500";
+  const detailStrongText = isDark ? "text-gray-100" : "text-gray-900";
+  const detailIconClass = isDark ? "text-gray-400" : "text-gray-500";
+  const detailBodyText = isDark ? "text-gray-200" : "text-gray-700";
   const [page, setPage] = useState(1);
   const [data, setData] = useState<Paginated<JobApplication> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,13 +47,21 @@ function MyApplication() {
   const [jobError, setJobError] = useState<string | null>(null);
 
   const fmtDate = (iso?: string, withTime = false) => {
-    if (!iso) return "—";
+    if (!iso) return "-";
     try {
       const d = new Date(iso);
       return withTime ? d.toLocaleString() : d.toLocaleDateString();
     } catch {
-      return iso || "—";
+      return iso || "-";
     }
+  };
+
+  const getEmployerResponseAt = (app: JobApplication | null) => {
+    if (!app) return null;
+    if (app.status === "HIRED" && app.hired_at) return app.hired_at;
+    if (app.status === "SHORTLISTED" && app.shortlisted_at) return app.shortlisted_at;
+    if (app.status === "REJECTED") return app.shortlisted_at || app.hired_at || null;
+    return null;
   };
 
   const openDetails = async (app: JobApplication) => {
@@ -63,6 +80,13 @@ function MyApplication() {
     }
   };
 
+  const closeDetails = () => {
+    setDetailOpen(false);
+    setSelected(null);
+    setJobDetail(null);
+    setJobError(null);
+  };
+
   const fetchData = async (p: number) => {
     setLoading(true);
     setError(null);
@@ -77,6 +101,8 @@ function MyApplication() {
   };
 
   useEffect(() => { fetchData(page); }, [page]);
+
+  const employerResponseAt = getEmployerResponseAt(selected);
 
   return (
     <section className="pb-12">
@@ -93,7 +119,7 @@ function MyApplication() {
           {!loading && !error && data?.results.map((app) => (
             <div
               key={app.id}
-              className={"bg-white rounded-2xl p-6 border border-gray-300"}
+              className={`${cardSurfaceClass} rounded-2xl p-6`}
               style={{ boxShadow: "0px 0px 0px 1px rgba(0, 0, 0, 0.08)" }}
               onClick={() => openDetails(app)}
               role="button"
@@ -102,9 +128,15 @@ function MyApplication() {
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">{app.job_title}</h3>
-                  <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
-                    <IoTimeOutline className="text-gray-500" /> Applied {fmtDate(app.created_at)}
+                  <h3 className={`text-xl font-semibold ${detailStrongText}`}>{app.job_title}</h3>
+                  <div className={`mt-1 text-sm ${mutedText} flex items-center gap-2`}>
+                    <IoTimeOutline className={detailIconClass} />
+                    {(() => {
+                      const respondedAt = getEmployerResponseAt(app);
+                      return respondedAt
+                        ? <span>Employer responded {fmtDate(respondedAt)}</span>
+                        : <span>Employer response: -</span>;
+                    })()}
                   </div>
                 </div>
                 <div className="shrink-0">{statusBadge(app.status)}</div>
@@ -119,10 +151,99 @@ function MyApplication() {
         </div>
       </div>
 
-      {/* Details view removed as requested */}
+      <Modal
+        open={detailOpen}
+        onClose={closeDetails}
+        title={selected ? selected.job_title : "Application details"}
+        maxWidthClass="max-w-3xl"
+      >
+        {selected ? (
+          <div className={`space-y-6 ${detailStrongText}`}>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div>
+                <h3 className={`text-xl font-semibold ${detailStrongText}`}>{selected.job_title}</h3>
+                <div className={`mt-1 text-sm ${detailMutedText} flex items-center gap-2`}>
+                  <IoTimeOutline className={detailIconClass} />
+                  <span>Applied {fmtDate(selected.created_at, true)}</span>
+                </div>
+              </div>
+              <div className="shrink-0">{statusBadge(selected.status)}</div>
+            </div>
+
+            {employerResponseAt && (
+              <div className={`text-xs ${detailMutedText} flex items-center gap-2`}>
+                <IoTimeOutline className={detailIconClass} />
+                <span>Employer responded on {fmtDate(employerResponseAt, true)}</span>
+              </div>
+            )}
+
+            {jobLoading && (
+              <div className="flex justify-center items-center py-8">
+                <div className="h-8 w-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+              </div>
+            )}
+
+            {!jobLoading && jobError && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {jobError}
+              </div>
+            )}
+
+            {!jobLoading && !jobError && (
+              <div className={`space-y-6 ${detailStrongText}`}>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className={`flex items-center gap-2 text-sm ${detailBodyText}`}>
+                    <CiLocationOn className={`text-lg ${detailIconClass}`} />
+                    <span>{jobDetail?.location || "Location not specified"}</span>
+                  </div>
+                  <div className={`flex items-center gap-2 text-sm ${detailBodyText}`}>
+                    <MdOutlineWorkOutline className={`text-lg ${detailIconClass}`} />
+                    <span>{jobDetail?.employment_type || "Employment type not specified"}</span>
+                  </div>
+                  <div className={`flex items-center gap-2 text-sm ${detailBodyText}`}>
+                    <LuDollarSign className={`text-lg ${detailIconClass}`} />
+                    <span>
+                      {jobDetail?.budget
+                        ? `${jobDetail.currency || "USD"} ${jobDetail.budget.toLocaleString()}`
+                        : "Budget not provided"}
+                    </span>
+                  </div>
+                  <div className={`flex items-center gap-2 text-sm ${detailBodyText}`}>
+                    <IoTimeOutline className={`text-lg ${detailIconClass}`} />
+                    <span>Posted {fmtDate(jobDetail?.created_at)}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className={`text-sm font-semibold ${detailStrongText} uppercase tracking-wide`}>Job Description</h4>
+                  <p className={`mt-2 whitespace-pre-line text-sm leading-relaxed ${detailBodyText}`}>
+                    {jobDetail?.description || "No description provided."}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <h4 className={`text-sm font-semibold ${detailStrongText} uppercase tracking-wide`}>Your Application</h4>
+              <p className={`mt-2 whitespace-pre-line text-sm leading-relaxed ${detailBodyText}`}>
+                {selected.cover_letter || "No cover letter included."}
+              </p>
+            </div>
+
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={closeDetails}>
+                Close
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500">Select an application to view its details.</div>
+        )}
+      </Modal>
     </section>
   );
 }
 
 export default MyApplication;
+
 

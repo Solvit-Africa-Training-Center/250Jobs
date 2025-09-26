@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { login as loginApi, register as registerApi, type RegisterPayload, type AuthUser, me as meApi } from "../api/auth";
 
 type AuthContextType = {
@@ -12,9 +12,16 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const stripTokenPrefix = (value: string) => {
+  const lower = (value || "").toLowerCase();
+  if (lower.startsWith("bearer ")) return value.slice(7).trim();
+  if (lower.startsWith("token ")) return value.slice(6).trim();
+  return value;
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const tokenKey = import.meta.env.VITE_AUTH_TOKEN_KEY || "accessToken";
-  const refreshKey = "refreshToken";
+  const refreshKey = import.meta.env.VITE_REFRESH_TOKEN_KEY || "refreshToken";
   const roleKey = "userRole";
 
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -37,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           id: data.id,
           email: data.email,
           username: data.username,
-        role: prev?.role || storedRole || (prev?.role as any),
+          role: prev?.role || storedRole || (prev?.role as any),
         }));
       } catch {
         localStorage.removeItem(tokenKey);
@@ -49,34 +56,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
       }
     })();
-  }, [tokenKey]);
+  }, [tokenKey, refreshKey, roleKey]);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     const { access, refresh, user } = await loginApi(email, password);
-    localStorage.setItem(tokenKey, access);
+    localStorage.setItem(tokenKey, stripTokenPrefix(access));
     localStorage.setItem(refreshKey, refresh);
     if (user?.role) localStorage.setItem(roleKey, String(user.role));
     if (user?.id) localStorage.setItem("authUserId", String(user.id));
     setUser(user);
     return user;
-  };
+  }, [tokenKey, refreshKey, roleKey]);
 
-  const register = async (payload: RegisterPayload) => {
+  const register = useCallback(async (payload: RegisterPayload) => {
     await registerApi(payload);
     // After successful registration, prefer user to login; do not auto-login since API doesn't return tokens
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem(tokenKey);
     localStorage.removeItem(refreshKey);
     localStorage.removeItem(roleKey);
     localStorage.removeItem("authUserId");
     setUser(null);
-  };
+  }, [tokenKey, refreshKey, roleKey]);
+
+  useEffect(() => {
+    const handler = () => logout();
+    window.addEventListener("auth:logout", handler);
+    return () => window.removeEventListener("auth:logout", handler);
+  }, [logout]);
 
   const value = useMemo(
     () => ({ user, isAuthenticated: !!user, loading, login, register, logout }),
-    [user, loading]
+    [user, loading, login, register, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

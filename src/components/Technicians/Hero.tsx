@@ -1,5 +1,5 @@
 ﻿import { useAuth } from "../../context/AuthContext";
-import { Link } from "react-router-dom";
+import { useTheme } from "../../context/ThemeContext"; // your theme context
 
 interface HeroProps {
   activePage: "available" | "application";
@@ -8,54 +8,75 @@ interface HeroProps {
 
 function Hero({ activePage, setActivePage }: HeroProps) {
   const { user } = useAuth();
+  const { theme } = useTheme(); 
+  const isDark = theme === "dark";
+
   return (
     <section
-      className="relative pt-20 px-4 md:px-16 pb-12 bg-no-repeat bg-cover bg-center"
-     
+      className={`relative  pt-20 px-4 md:px-16 pb-12 bg-no-repeat bg-cover bg-center ${
+        isDark ? "bg-gray-900" : "bg-white"
+      }`}
     >
-      <div className="absolute inset-0 bg-[#F8FCFF] pointer-events-none" />
+     
+      <div
+        className={`absolute inset-0 pointer-events-none ${
+          isDark ? "bg-gray-800" : "bg-[#F8FCFF]"
+        }`}
+      />
+
+      
       <div className="relative max-w-5xl mx-auto flex flex-col-reverse md:flex-row items-center justify-between gap-8">
+       
+        <div className="flex-1 space-y-6 mt-8">
         
-        <div className="flex-1 space-y-6">
-          <h1 className="text-4xl md:text-4xl font-bold">
-            <span className="text-black">{`Welcome Back${user?.username ? ", " + user.username : ""}!`}</span>
-          </h1>
-          <p className="text-gray-600 text-lg md:text-xl">
-            Search, apply, and track your applications — all in one place.
-          </p>
+          <div className="relative">
+            <div className="absolute -top-10 -left-10 w-72 h-72 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
+            <div className="absolute -bottom-10 -right-10 w-72 h-72 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
 
-          <div className="w-full flex items-center justify-between bg-[#ECECF0] rounded-full p-1">
-            <button
-              onClick={() => setActivePage("available")}
-              className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
-                activePage === "available" ? "bg-white text-black" : "hover:bg-white hover:text-black"
+           
+            <h1
+              className={`relative text-4xl sm:text-5xl md:text-6xl font-extrabold leading-snug ${
+                isDark ? "text-white" : "text-gray-900"
               }`}
             >
-              Available Jobs
-            </button>
-
-            <button
-              onClick={() => setActivePage("application")}
-              className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
-                activePage === "application" ? "bg-white text-black" : "hover:bg-white hover:text-black"
-              }`}
-            >
-              My Application
-            </button>
+              Your Job Dashboard
+            </h1>
           </div>
 
-         
-          <div className="flex justify-end">
-            <Link
-              to="/message"
-              className="inline-flex items-center px-5 py-2 bg-[#2984df] text-white font-semibold rounded-full hover:bg-blue-700 transition"
-            >
-              Messages
-            </Link>
-          </div>
+          <div
+  className={`w-full flex items-center justify-between rounded-full p-1 mt-20 ${
+    isDark ? "bg-gray-700" : "bg-[#ECECF0]"
+  }`}
+>
+  <button
+    onClick={() => setActivePage("available")}
+    className={`flex-1 mx-1 py-2 rounded-full font-semibold transition
+      ${activePage === "available"
+        ? "bg-white text-black"         
+        : isDark
+        ? "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white"  
+        : "bg-[#ECECF0] text-gray-700 hover:bg-white hover:text-black"   
+      }`}
+  >
+    Available Jobs
+  </button>
+
+     <button
+       onClick={() => setActivePage("application")}
+     className={`flex-1 mx-1 py-2 rounded-full font-semibold transition
+      ${activePage === "application"
+        ? "bg-white text-black"
+        : isDark
+        ? "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white" 
+        : "bg-[#ECECF0] text-gray-700 hover:bg-white hover:text-black"   
+      }`}
+     >
+      My Application
+     </button>
+      </div>
+
+          
         </div>
-
-
       </div>
     </section>
   );

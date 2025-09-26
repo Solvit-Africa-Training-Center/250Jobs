@@ -64,7 +64,7 @@ export default function AdminTechnicians({ embedded = false }: { embedded?: bool
 
   const content = (
     <div className="space-y-6">
-      {/* Header Section */}
+     
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Technician Management</h2>
@@ -72,7 +72,7 @@ export default function AdminTechnicians({ embedded = false }: { embedded?: bool
         </div>
       </div>
 
-      {/* Stats Cards */}
+     
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
           <div className="text-2xl font-bold text-gray-900">{items.length}</div>
@@ -98,7 +98,7 @@ export default function AdminTechnicians({ embedded = false }: { embedded?: bool
         </div>
       </div>
 
-      {/* Search Section */}
+      
       <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1 relative">

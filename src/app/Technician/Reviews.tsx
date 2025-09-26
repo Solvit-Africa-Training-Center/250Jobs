@@ -47,8 +47,12 @@ export default function Reviews() {
                   <p className="text-black font-bold">{r.reviewer_username}</p>
                   <div className="flex items-center gap-1 text-yellow-500">
                     {Array.from({ length: totalStars }).map((_, index) => (
-                      <TiStarFullOutline key={index} />
+                      <TiStarFullOutline
+                        key={index}
+                        className={index < (r.rating || 0) ? "text-yellow-400" : "text-gray-300"}
+                      />
                     ))}
+                    <span className="ml-2 text-xs text-gray-500">{r.rating}/5</span>
                   </div>
                 </div>
                 <p className="ml-auto text-gray-500">{new Date(r.created_at).toLocaleDateString()}</p>

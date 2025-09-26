@@ -61,7 +61,13 @@ export function getWsUrl(roomId: number) {
   const url = new URL(base);
   const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
   const tokenKey = import.meta.env.VITE_AUTH_TOKEN_KEY || "accessToken";
-  const token = localStorage.getItem(tokenKey) || "";
+  let token = localStorage.getItem(tokenKey) || "";
+  const lower = token.toLowerCase();
+  if (lower.startsWith("bearer ")) {
+    token = token.slice(7).trim();
+  } else if (lower.startsWith("token ")) {
+    token = token.slice(6).trim();
+  }
   const origin = `${wsProtocol}//${url.host}`;
   return `${origin}/ws/chat/${roomId}/?token=${encodeURIComponent(token)}`;
 }
