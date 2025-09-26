@@ -7,6 +7,7 @@ import type { TechnicianMini, Paginated } from "../../types/employer";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import Input from "../ui/Input";
+import { useTheme } from "../context/ThemeContext";
 
 type Participant = Room["participants"][number];
 
@@ -425,6 +426,7 @@ function ChatPage() {
   return (
     <div className="flex justify-center pt-24 px-6 pb-24">
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6">
+        
         <div className="bg-white border border-gray-200 rounded-2xl p-4 md:col-span-1 h-[70vh] flex flex-col">
           <div className="flex items-center justify-between mb-3 gap-2">
             <div className="flex items-center gap-2">
@@ -436,7 +438,7 @@ function ChatPage() {
               )}
             </div>
           </div>
-          {/* loading spacer removed to avoid layout shift */}
+         
           {error && <div className="text-red-600">{error}</div>}
           <div className="overflow-y-auto divide-y divide-gray-200">
             {rooms.map((room) => {
@@ -446,16 +448,16 @@ function ChatPage() {
                 <button
                   key={room.id}
                   onClick={() => setSelectedRoom(room)}
-                  className={`w-full text-left p-3 hover:bg-blue-50 transition ${
-                    selectedRoom?.id === room.id ? "bg-blue-50" : ""
-                  }`}
+className={`w-full text-left p-3 hover:bg-blue-50 transition ${
+  selectedRoom?.id === room.id ? "bg-blue-50" : ""
+}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
                       {(cp?.username || cp?.email || "?").charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 flex items-center justify-between">
-                      <div className="font-medium text-gray-900">{cp?.username || cp?.email || "Unknown"}</div>
+                     <div className="font-medium text-gray-900">{cp?.username || cp?.email || "Unknown"}</div>
                       {typeof unread === 'number' && unread > 0 && (
                         <span className="text-xs text-white bg-red-500 rounded-full px-2 py-0.5">{unread}</span>
                       )}
@@ -476,10 +478,23 @@ function ChatPage() {
               <div className="border-b border-gray-200 pb-3 mb-3">
                 <div className="flex items-center justify-between">
                   <div className="font-semibold text-gray-900">{counterpartOf(selectedRoom)?.username || counterpartOf(selectedRoom)?.email || "Conversation"}</div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => startCall("audio")}>Audio Call</Button>
-                    <Button variant="outline" onClick={() => startCall("video")}>Video Call</Button>
-                  </div>
+                <div className="flex gap-2">
+  <Button 
+    variant="secondary" 
+    onClick={() => startCall("audio")}
+    className="text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+  >
+    Audio Call
+  </Button>
+  <Button 
+    variant="secondary" 
+    onClick={() => startCall("video")}
+    className="text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+  >
+    Video Call
+  </Button>
+</div>
+
                 </div>
                 {/* Removed room id label */}
                 {wsError && <div className="text-xs text-red-600 mt-1">{wsError}</div>}
@@ -491,69 +506,115 @@ function ChatPage() {
                   const senderUsername = senderIsString ? String(m.sender).toLowerCase() : String((m.sender as any)?.username || "").toLowerCase();
                   const mine = (currentUserId !== undefined && senderId === currentUserId) || (!!currentUsername && senderUsername === currentUsername);
                   return (
-                    <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                      <div
-                        className={`group relative max-w-[80%] rounded-lg px-3 py-2 ${mine ? "bg-blue-100" : "bg-gray-100"}`}
-                        onClick={mine ? (() => setBubbleMenuId((id) => (id === m.id ? null : m.id))) : undefined}
-                      >
-                        {mine && bubbleMenuId === m.id && (
-                          <div className="absolute top-5 right-0 bg-white border border-gray-200 rounded-md shadow text-sm z-50 min-w-[140px]">
-                            <button
-                              className="block w-full text-left px-3 py-2 hover:bg-gray-100"
-                              onClick={(e) => { e.stopPropagation(); setEditingId(m.id); setEditingText(m.content); setBubbleMenuId(null); }}
-                            >Edit</button>
-                            <button
-                              className="block w-full text-left px-3 py-2 text-red-600 hover:bg-gray-100"
-                              onClick={(e) => { e.stopPropagation(); setBubbleMenuId(null); doDelete(m); }}
-                            >Delete</button>
-                          </div>
-                        )}
-                        {editingId === m.id ? (
-                          <div className="flex items-center gap-2">
-                            <button
-                              className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 emoji-font"
-                              title="Insert emoji"
-                              onClick={(e) => { e.stopPropagation(); setEditEmojiOpen((v) => !v); }}
-                            >{commonEmojis[0] || "😊"}</button>
-                            <input
-                              ref={editInputRef}
-                              className="flex-1 bg-white/70 border border-gray-300 rounded px-2 py-1 text-sm emoji-font"
-                              value={editingText}
-                              onChange={(e) => setEditingText(e.target.value)}
-                              onFocus={() => setEditEmojiOpen(false)}
-                              onKeyDown={(e) => { if (e.key === "Enter") doEdit(); if (e.key === "Escape") setEditingId(null); }}
-                              autoFocus
-                            />
-                            <button className="text-xs text-blue-700 font-medium" onClick={doEdit}>Save</button>
-                            <button className="text-xs text-gray-600" onClick={() => setEditingId(null)}>Cancel</button>
-                            {editEmojiOpen && (
-                              <div className="absolute -top-2 right-0 bg-white border border-gray-200 rounded-md shadow p-2 z-50">
-                                <div className="flex flex-wrap gap-1 max-w-[220px]">
-                                  {commonEmojis.map((em, idx) => (
-                                    <button
-                                      key={idx}
-                                      className="text-xl emoji-font"
-                                      title={em}
-                                      onClick={(e) => { e.stopPropagation(); insertEmojiToEdit(em); }}
-                                    >{em}</button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <>
-                            <div
-                              className="text-sm text-gray-800 whitespace-pre-wrap"
-                              style={{ fontFamily: "system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji',sans-serif" }}
-                            >
-                              {m.content}
-                            </div>
-                            <div className="text-[10px] text-gray-500 mt-1">{new Date(m.timestamp).toLocaleString()}</div>
-                          </>
-                        )}
-                      </div>
-                    </div>
+                   <div
+  key={m.id}
+  className={`flex ${mine ? "justify-end" : "justify-start"}`}
+>
+  <div
+    className={`group relative max-w-[80%] rounded-lg px-3 py-2 ${
+      mine ? "bg-blue-100 dark:bg-blue-800" : "bg-gray-100 dark:bg-gray-800"
+    } border border-gray-200 dark:border-gray-600`} // Adjust or remove border as needed
+    onClick={mine ? (() => setBubbleMenuId((id) => (id === m.id ? null : m.id))) : undefined}
+  >
+    {mine && bubbleMenuId === m.id && (
+      <div className="absolute top-5 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow text-sm z-50 min-w-[140px]">
+        <button
+          className="block w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingId(m.id);
+            setEditingText(m.content);
+            setBubbleMenuId(null);
+          }}
+        >
+          Edit
+        </button>
+        <button
+          className="block w-full text-left px-3 py-2 text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+          onClick={(e) => {
+            e.stopPropagation();
+            setBubbleMenuId(null);
+            doDelete(m);
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    )}
+    {editingId === m.id ? (
+      <div className="flex items-center gap-2">
+        <button
+          className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 emoji-font"
+          title="Insert emoji"
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditEmojiOpen((v) => !v);
+          }}
+        >
+          {commonEmojis[0] || "😊"}
+        </button>
+        <input
+          ref={editInputRef}
+          className="flex-1 bg-white/70 dark:bg-gray-800/70 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm text-gray-900 dark:text-white emoji-font"
+          value={editingText}
+          onChange={(e) => setEditingText(e.target.value)}
+          onFocus={() => setEditEmojiOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") doEdit();
+            if (e.key === "Escape") setEditingId(null);
+          }}
+          autoFocus
+        />
+        <button
+          className="text-xs text-blue-700 dark:text-blue-300 font-medium"
+          onClick={doEdit}
+        >
+          Save
+        </button>
+        <button
+          className="text-xs text-gray-600 dark:text-gray-300"
+          onClick={() => setEditingId(null)}
+        >
+          Cancel
+        </button>
+        {editEmojiOpen && (
+          <div className="absolute -top-2 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md shadow p-2 z-50">
+            <div className="flex flex-wrap gap-1 max-w-[220px]">
+              {commonEmojis.map((em, idx) => (
+                <button
+                  key={idx}
+                  className="text-xl emoji-font"
+                  title={em}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    insertEmojiToEdit(em);
+                  }}
+                >
+                  {em}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    ) : (
+      <>
+        <div
+          className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap"
+          style={{
+            fontFamily:
+              "system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji',sans-serif",
+          }}
+        >
+          {m.content}
+        </div>
+        <div className="text-[10px] text-gray-500 dark:text-gray-300 mt-1">
+          {new Date(m.timestamp).toLocaleString()}
+        </div>
+      </>
+    )}
+  </div>
+</div>
                   );
                 })}
                 {messages.length === 0 && (

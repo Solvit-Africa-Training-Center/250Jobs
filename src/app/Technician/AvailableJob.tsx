@@ -66,14 +66,14 @@ function AvailableJobs() {
   const detailLabelText = isDark ? 'text-gray-200' : 'text-gray-700';
   const detailMutedText = isDark ? 'text-gray-400' : 'text-gray-500';
 
-  // Light theme classes for the Apply modal
+
   const applyModalTextClass = isDark ? 'text-gray-200' : 'text-gray-800';
   const applyModalBgClass = isDark ? 'bg-gray-900' : 'bg-white';
   const applyInputClass = isDark ? '!bg-gray-800 !text-gray-100 !border-gray-700' : '!bg-white !text-gray-900 !border-gray-300';
   const applyTextareaClass = isDark ? 'bg-gray-800 text-gray-100 border-gray-700 focus:ring-2 focus:ring-blue-500' : 'bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500';
   const applyLabelClass = isDark ? 'text-gray-200 font-medium' : 'text-gray-700 font-medium';
 
-  // Button classes for the modal
+
   const cancelButtonClass = isDark 
     ? '!bg-gray-700 !text-gray-100 hover:!bg-gray-600 !border !border-gray-600' 
     : '!bg-gray-100 !text-gray-700 hover:!bg-gray-200 !border !border-gray-300';

@@ -1,0 +1,189 @@
+@import ""tailwindcss"";
+
+/* Ensure emoji-capable fonts to avoid tofu/question marks */
+.emoji-font {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji',
+    sans-serif;
+}
+
+/* Light/Dark defaults */
+html.dark { color-scheme: dark; }
+body { @apply bg-white text-gray-900; }
+html.dark body { @apply bg-gray-900 text-gray-100; }
+
+/* Common dark-surface overrides so light theme stays untouched */
+html.dark .bg-white,
+html.dark .bg-gray-50 {
+  background-color: #111827;
+}
+html.dark .bg-gray-100,
+html.dark .bg-[#F8FCFF],
+html.dark .bg-[#ECECF0],
+html.dark .bg-[#f5f5fc] {
+  background-color: #1f2937;
+}
+html.dark .text-black,
+html.dark .text-gray-900 {
+  color: #f9fafb;
+}
+html.dark .text-gray-800 {
+  color: #f3f4f6;
+}
+html.dark .text-gray-700 {
+  color: #e5e7eb;
+}
+html.dark .text-gray-600 {
+  color: #d1d5db;
+}
+html.dark .text-gray-500 {
+  color: #94a3b8;
+}
+html.dark .border-gray-200 {
+  border-color: #1f2937;
+}
+html.dark .border-gray-300 {
+  border-color: #374151;
+}
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #111827;
+  color: #f9fafb;
+  border-color: #374151;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #94a3b8;
+}
+html.dark input:focus,
+html.dark textarea:focus,
+html.dark select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+/* Keep-light utility: sections wrapped in .keep-light stay light even in dark mode */
+html.dark .keep-light {
+  background-color: #f9fafb;
+  color: #111827;
+}
+html.dark .keep-light .bg-white { background-color: #ffffff; }
+html.dark .keep-light .text-gray-800 { color: #1f2937; }
+html.dark .keep-light .text-gray-600 { color: #4b5563; }
+html.dark .keep-light .text-gray-500 { color: #6b7280; }
+html.dark .keep-light .border-gray-300 { border-color: #d1d5db; }
+html.dark .keep-light .border-red-200 { border-color: #fecaca; }
+html.dark .keep-light .text-red-700 { color: #b91c1c; }
+html.dark .keep-light .bg-red-50 { background-color: #fef2f2; }
+html.dark .keep-light input,
+html.dark .keep-light textarea,
+html.dark .keep-light select {
+  background-color: #ffffff;
+  color: #111827;
+  border-color: #d1d5db;
+}
+html.dark .keep-light input::placeholder,
+html.dark .keep-light textarea::placeholder {
+  color: #9ca3af;
+}
+html.dark .keep-light a { color: inherit; }
+
+/* Prevent browser scroll anchoring from shifting viewport on tab switches */
+.no-anchor { overflow-anchor: none; }
+
+/* Simple organic blob animation for hero background */
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.98); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+.animate-blob { animation: blob 12s infinite; }
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
+/* Keep login screen light even when theme is dark */
+html.dark .login-page {
+  background-color: #f9fafb;
+  color: #111827;
+}
+html.dark .login-page .bg-white { background-color: #ffffff; }
+html.dark .login-page .text-gray-800 { color: #1f2937; }
+html.dark .login-page .text-gray-600 { color: #4b5563; }
+html.dark .login-page .text-gray-500 { color: #6b7280; }
+html.dark .login-page .text-red-700 { color: #b91c1c; }
+html.dark .login-page .bg-red-50 { background-color: #fef2f2; }
+html.dark .login-page .border-gray-300 { border-color: #d1d5db; }
+html.dark .login-page .border-red-200 { border-color: #fecaca; }
+html.dark .login-page input,
+html.dark .login-page textarea,
+html.dark .login-page select {
+  background-color: #ffffff;
+  color: #111827;
+  border-color: #d1d5db;
+}
+html.dark .login-page input::placeholder,
+html.dark .login-page textarea::placeholder {
+  color: #9ca3af;
+}
+/* Light-only surfaces */
+html.dark .login-page,
+html.dark .modal-keep-light {
+  background-color: #f9fafb;
+  color: #111827;
+}
+html.dark .login-page .bg-white,
+html.dark .modal-keep-light.bg-white,
+html.dark .modal-keep-light .bg-white,
+html.dark .modal-keep-light .dark\:bg-gray-900,
+html.dark .modal-keep-light .dark\:bg-gray-800,
+html.dark .modal-keep-light .dark\:bg-gray-700 {
+  background-color: #ffffff !important;
+}
+html.dark .login-page .text-gray-800,
+html.dark .modal-keep-light .dark\:text-gray-100,
+html.dark .modal-keep-light .dark\:text-gray-200,
+html.dark .modal-keep-light .dark\:text-gray-300,
+html.dark .modal-keep-light .dark\:text-gray-400 {
+  color: #1f2937 !important;
+}
+html.dark .login-page .text-gray-600,
+html.dark .login-page .text-gray-500,
+html.dark .modal-keep-light .text-gray-500,
+html.dark .modal-keep-light .dark\:text-gray-500 {
+  color: #4b5563 !important;
+}
+html.dark .login-page .text-red-700,
+html.dark .modal-keep-light .text-red-700 {
+  color: #b91c1c !important;
+}
+html.dark .login-page .bg-red-50,
+html.dark .modal-keep-light .bg-red-100,
+html.dark .modal-keep-light .bg-red-50,
+html.dark .modal-keep-light .bg-green-100 {
+  background-color: #fef2f2 !important;
+}
+html.dark .login-page .border-gray-300,
+html.dark .modal-keep-light .border-gray-300,
+html.dark .modal-keep-light .dark\:border-gray-700 {
+  border-color: #d1d5db !important;
+}
+html.dark .login-page .border-red-200,
+html.dark .modal-keep-light .border-red-200 {
+  border-color: #fecaca !important;
+}
+html.dark .login-page input,
+html.dark .login-page textarea,
+html.dark .login-page select,
+html.dark .modal-keep-light input,
+html.dark .modal-keep-light textarea,
+html.dark .modal-keep-light select {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
+}
+html.dark .login-page input::placeholder,
+html.dark .modal-keep-light input::placeholder,
+html.dark .modal-keep-light textarea::placeholder {
+  color: #9ca3af !important;
+}

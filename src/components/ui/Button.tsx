@@ -1,11 +1,3 @@
-import React from "react";
-
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "outline";
-  loading?: boolean;
-  leftIcon?: React.ReactNode;
-};
-
 export default function Button({
   variant = "primary",
   loading,
@@ -26,11 +18,11 @@ export default function Button({
 
   return (
     <button
-      className={`${base} ${variants[variant]} ${isDisabled ? "opacity-60 cursor-not-allowed" : ""} ${className}`}
+      className={`${base} ${variants[variant]} ${className} ${isDisabled ? "opacity-60 cursor-not-allowed" : ""}`}
       disabled={isDisabled}
       {...props}
     >
-      {leftIcon ? <span className="mr-2">{leftIcon}</span> : null}
+      {leftIcon && <span className="mr-2">{leftIcon}</span>}
       {children}
     </button>
   );

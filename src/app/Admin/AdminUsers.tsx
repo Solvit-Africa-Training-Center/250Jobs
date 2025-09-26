@@ -1,312 +1,332 @@
 import { useEffect, useState } from "react";
-import { createAdminUser, deleteAdminUser, listAdminUsers, updateAdminUser, type AdminUser } from "../../api/admin";
-import Button from "../../components/ui/Button";
+import { FiUserPlus } from "react-icons/fi";
 import Modal from "../../components/ui/Modal";
+import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import { FiEdit2, FiTrash2, FiCheck, FiX, FiSearch, FiUserPlus, FiRefreshCw } from "react-icons/fi";
-import { MdAdminPanelSettings, MdEngineering, MdPerson } from "react-icons/md";
+import {
+  listAdminUsers as listUsers,
+  createAdminUser as createUser,
+  updateAdminUser as updateUser,
+  deleteAdminUser as deleteUser,
+  type AdminUser,
+} from "../../api/admin";
 
-export default function AdminUsers({ embedded = false }: { embedded?: boolean }) {
+export default function AdminUsers({
+  embedded = false,
+  isDark = false, 
+}: {
+  embedded?: boolean;
+  isDark?: boolean;
+}) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [q, setQ] = useState("");
+
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<AdminUser | null>(null);
-  const [form, setForm] = useState<Partial<AdminUser> & { password?: string }>({ role: "technician", is_active: true } as any);
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
+  const [form, setForm] = useState<Partial<AdminUser>>({});
 
-  const load = async () => {
-    setLoading(true); 
-    setError(null);
-    try {
-      const res = await listAdminUsers(q ? { search: q } : undefined);
-      setUsers(res);
-    } catch (e: any) { 
-      setError(e?.message || "Failed to load users"); 
-    }
-    finally { 
-      setLoading(false); 
-    }
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await listUsers();
+        setUsers(data);
+      } catch (e: any) {
+        setError(e?.message || "Failed to load users");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const openAddModal = () => {
+    setEditing(null);
+    setForm({});
+    setModalOpen(true);
   };
 
-  useEffect(() => { load(); }, []);
-
-  const openNew = () => { 
-    setEditing(null); 
-    setForm({ role: "technician", is_active: true } as any); 
-    setModalOpen(true); 
-  };
-
-  const openEdit = (u: AdminUser) => { 
-    setEditing(u); 
-    setForm({ ...u, password: undefined }); 
-    setModalOpen(true); 
+  const openEditModal = (user: AdminUser) => {
+    setEditing(user);
+    setForm(user);
+    setModalOpen(true);
   };
 
   const save = async () => {
-    setSaving(true);
     try {
-      if (editing) await updateAdminUser(editing.id, form);
-      else await createAdminUser(form);
-      setModalOpen(false); 
-      await load();
-    } catch (e: any) { 
-      alert(e?.message || "Failed to save"); 
+      setSaving(true);
+      if (editing) {
+        const updated = await updateUser(editing.id, form);
+        setUsers(users.map((u) => (u.id === editing.id ? updated : u)));
+      } else {
+        const created = await createUser(form);
+        setUsers([...users, created]);
+      }
+      setModalOpen(false);
+    } catch (e: any) {
+      alert(e?.message || "Failed to save user");
     } finally {
       setSaving(false);
     }
   };
 
-  const remove = async (u: AdminUser) => { 
-    if (!confirm(`Delete ${u.username}?`)) return; 
-    await deleteAdminUser(u.id); 
-    await load(); 
-  };
-
-  const toggleActive = async (u: AdminUser) => {
+  const remove = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await updateAdminUser(u.id, { is_active: !u.is_active });
-      await load();
-    } catch (e: any) { 
-      alert(e?.message || "Failed to update status"); 
+      await deleteUser(id);
+      setUsers(users.filter((u) => u.id !== id));
+    } catch (e: any) {
+      alert(e?.message || "Failed to delete user");
     }
   };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'admin': return <MdAdminPanelSettings className="text-purple-600" />;
-      case 'technician': return <MdEngineering className="text-blue-600" />;
-      default: return <MdPerson className="text-gray-600" />;
-    }
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin': return 'bg-purple-100 text-purple-800';
-      case 'technician': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
-  };
-
-  const content = (
+  return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-          <p className="text-gray-600 mt-1">Manage users and their permissions</p>
-        </div>
-        <Button 
-          onClick={openNew} 
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+      <div className="flex justify-between items-center">
+        <h2
+          className={`text-2xl font-bold ${
+            isDark ? "text-white" : "text-gray-800"
+          }`}
         >
-          <FiUserPlus className="text-lg" />
-          Add New User
+          All Users
+        </h2>
+        <Button
+          onClick={openAddModal}
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg"
+        >
+          <FiUserPlus className="mr-2" /> Add New User
         </Button>
       </div>
 
-  {/* Search and Filters */}
-<div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-  <div className="flex flex-col sm:flex-row gap-3">
-    <div className="flex-1 relative">
-      <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-      <Input 
-        placeholder="Search users by username, email, or phone..." 
-        value={q} 
-        onChange={(e) => setQ(e.target.value)}
-        onKeyDown={(e) => { if (e.key === "Enter") load(); }}
-        className="pl-10"
-      />
-    </div>
+      {loading && (
+        <div
+          className={`text-center ${isDark ? "text-gray-300" : "text-gray-600"}`}
+        >
+          Loading...
+        </div>
+      )}
+      {error && <div className="text-red-600 text-center">{error}</div>}
 
-    <div className="flex gap-2">
-    <Button
-  variant="outline"
-  onClick={load}
-  className="flex items-center gap-2 !text-black bg-transparent hover:bg-transparent hover:!text-white hover:shadow-none"
->
-  <FiRefreshCw className={loading ? "animate-spin text-black" : "text-white"} />
-  Refresh
-</Button>
+      {!loading && users.length === 0 && (
+        <div
+          className={`text-center italic ${
+            isDark ? "text-gray-400" : "text-gray-500"
+          }`}
+        >
+          No users found.
+        </div>
+      )}
 
+      {users.length > 0 && (
+        <table
+          className={`min-w-full border rounded-xl overflow-hidden ${
+            isDark ? "border-gray-700" : "border-gray-300"
+          }`}
+        >
+          <thead
+            className={isDark ? "bg-gray-700 text-gray-200" : "bg-gray-100"}
+          >
+            <tr>
+              <th className="px-4 py-3 text-left">Username</th>
+              <th className="px-4 py-3 text-left">Email</th>
+              <th className="px-4 py-3 text-left">Role</th>
+              <th className="px-4 py-3 text-left">Active</th>
+              <th className="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className={isDark ? "divide-y divide-gray-700" : "divide-y divide-gray-300"}>
+            {users.map((user) => (
+              <tr
+                key={user.id}
+                className={isDark ? "hover:bg-gray-700" : "hover:bg-gray-50"}
+              >
+                <td className="px-4 py-3">{user.username}</td>
+                <td className="px-4 py-3">{user.email}</td>
+                <td className="px-4 py-3 capitalize">{user.role}</td>
+                <td className="px-4 py-3">
+                  {user.is_active ? "✅" : "❌"}
+                </td>
+                <td className="px-4 py-3 text-right space-x-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => openEditModal(user)}
+                    className={
+                      isDark
+                        ? "border-gray-500 text-gray-200 hover:bg-gray-700"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => remove(user.id)}
+                    className="bg-red-600 text-white hover:bg-red-700"
+                  >
+                    Delete
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
-      <Button
-        variant="secondary"
-        onClick={() => { setQ(""); load(); }}
-        className="!text-white hover:bg-transparent hover:shadow-none"
-      >
-        Clear
-      </Button>
-    </div>
-  </div>
-</div>
-
-
-      {/* Users Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        )}
-        
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mx-4 mt-4">
-            <div className="text-red-700 font-medium">{error}</div>
-            <Button variant="outline" onClick={load} className="mt-2">Try Again</Button>
-          </div>
-        )}
-
-        {!loading && !error && (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-             <thead className="bg-gray-600">
-  <tr>
-    <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">User</th>
-    <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Contact</th>
-    <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Role</th>
-    <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Status</th>
-    <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Joined</th>
-    <th className="px-6 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Actions</th>
-  </tr>
-</thead>
-
-              <tbody className="divide-y divide-gray-200">
-                {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold text-sm">
-                            {u.first_name?.[0] || u.username?.[0] || 'U'}
-                          </span>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {(u.first_name || u.last_name) ? `${u.first_name || ''} ${u.last_name || ''}`.trim() : u.username}
-                          </div>
-                          <div className="text-sm text-gray-500">@{u.username}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{u.email}</div>
-                      <div className="text-sm text-gray-500">{u.phone_number || '-'}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(u.role)}`}>
-                        {getRoleIcon(u.role)}
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(u.is_active)}`}>
-                        {u.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Date(u.date_joined).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Edit"
-                          onClick={() => openEdit(u)}
-                        >
-                          <FiEdit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          title={u.is_active ? 'Deactivate' : 'Activate'}
-                          onClick={() => toggleActive(u)}
-                        >
-                          {u.is_active ? <FiX className="w-4 h-4" /> : <FiCheck className="w-4 h-4" />}
-                        </button>
-                        <button
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete"
-                          onClick={() => remove(u)}
-                        >
-                          <FiTrash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            {users.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-gray-400 text-lg">No users found</div>
-                <p className="text-gray-500 mt-2">Try adjusting your search or add a new user</p>
-                <Button onClick={openNew} className="mt-4">Add First User</Button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Add/Edit User Modal */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? `Edit ${editing.username}` : "Add New User"} maxWidthClass="max-w-2xl">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Username" value={form.username || ""} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
-            <Input label="Email" type="email" value={form.email || ""} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-            <Input label="First Name" value={form.first_name || ""} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
-            <Input label="Last Name" value={form.last_name || ""} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+      {/* Modal */}
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={
+          <div className="flex items-center gap-3">
+            <div
+              className={
+                isDark
+                  ? "p-2 bg-gray-700 rounded-lg"
+                  : "p-2 bg-blue-100 rounded-lg"
+              }
+            >
+              <FiUserPlus
+                className={
+                  isDark ? "text-blue-400 text-xl" : "text-blue-600 text-xl"
+                }
+              />
+            </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-              <select 
-                value={form.role || ""} 
+              <div
+                className={
+                  isDark
+                    ? "text-xl font-bold text-white"
+                    : "text-xl font-bold text-gray-900"
+                }
+              >
+                {editing ? `Edit ${editing.username}` : "Add New User"}
+              </div>
+              <div
+                className={
+                  isDark ? "text-sm text-gray-300" : "text-sm text-gray-600"
+                }
+              >
+                {editing
+                  ? "Update user information"
+                  : "Create a new user account"}
+              </div>
+            </div>
+          </div>
+        }
+        maxWidthClass="max-w-4xl"
+      >
+        <div
+          className={
+            isDark
+              ? "space-y-6 bg-gray-800 p-6 rounded-xl text-white"
+              : "space-y-6 bg-white p-6 rounded-xl text-gray-900"
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <Input
+  label="Username"
+  value={form.username || ""}
+  onChange={(e) => setForm({ ...form, username: e.target.value })}
+  className="rounded-xl"
+  required
+/>
+
+            <Input
+              label="Email"
+              type="email"
+              value={form.email || ""}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className={
+                isDark
+                  ? "bg-gray-700 text-white rounded-xl"
+                  : "bg-gray-50 text-gray-900 rounded-xl"
+              }
+              required
+            />
+            <div>
+              <label
+                className={
+                  isDark
+                    ? "block text-sm font-medium text-gray-200 mb-2"
+                    : "block text-sm font-medium text-gray-700 mb-2"
+                }
+              >
+                Role
+              </label>
+              <select
+                value={form.role || ""}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="w-full bg-gray-100 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300"
+                className={
+                  isDark
+                    ? "w-full bg-gray-700 text-white px-4 py-3 rounded-xl border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    : "w-full bg-gray-50 text-gray-900 px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                }
               >
                 <option value="technician">Technician</option>
-                <option value="admin">Admin</option>
+                <option value="admin">Administrator</option>
               </select>
             </div>
-            <Input label="Phone Number" value={form.phone_number || ""} onChange={(e) => setForm({ ...form, phone_number: e.target.value })} />
-            <Input label="Location" value={form.location || ""} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-            <Input label="Password" type="password" value={form.password || ""} onChange={(e) => setForm({ ...form, password: e.target.value })} 
-                   placeholder={editing ? "Leave blank to keep current" : ""} />
           </div>
-          
-          <div className="flex items-center">
+
+          <div
+            className={
+              isDark
+                ? "flex items-center p-4 bg-gray-700 rounded-xl"
+                : "flex items-center p-4 bg-gray-50 rounded-xl"
+            }
+          >
             <input
               type="checkbox"
               id="is_active"
               checked={form.is_active || false}
-              onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              onChange={(e) =>
+                setForm({ ...form, is_active: e.target.checked })
+              }
+              className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
-              Active user account
+            <label
+              htmlFor="is_active"
+              className={isDark ? "ml-3 text-sm text-gray-200" : "ml-3 text-sm text-gray-700"}
+            >
+              Active user account (user can login and access the system)
             </label>
           </div>
         </div>
-        
-        <div className="mt-6 flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-          <Button onClick={save} loading={saving} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
-            {editing ? 'Update User' : 'Create User'}
+
+        <div
+          className={
+            isDark
+              ? "mt-8 flex justify-end gap-3 border-t border-gray-700 pt-6"
+              : "mt-8 flex justify-end gap-3 border-t border-gray-300 pt-6"
+          }
+        >
+          <Button
+            variant="outline"
+            onClick={() => setModalOpen(false)}
+            className={
+              isDark
+                ? "border-gray-500 text-gray-200 hover:bg-gray-700"
+                : "border-gray-300 text-gray-700 hover:bg-gray-50"
+            }
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={save}
+            loading={saving}
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl"
+          >
+            {editing ? "Update User" : "Create User"}
           </Button>
         </div>
       </Modal>
     </div>
   );
-
-  if (embedded) return content;
-  
-  return (
-    <section className="pt-24 px-4 md:px-16 pb-12">
-      <div className="max-w-7xl mx-auto">{content}</div>
-    </section>
-  );
 }
+
+
+
+
+

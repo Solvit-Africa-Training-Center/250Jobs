@@ -10,6 +10,7 @@ import ContactInfo from "../../app/Technician/ContactInfo";
 import SkillsCerts from "../../app/Technician/SkillsCerts";
 import Reviews from "../../app/Technician/Reviews";
 import Button from "../ui/Button";
+import { useTheme } from "../../context/ThemeContext";
 
 function TechProfile() {
   const [activePage, setActivePage] = useState("overview");
@@ -19,13 +20,13 @@ function TechProfile() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
-
-  // Drafts for global edit mode (header itself stays read-only)
   const [draftUsername, setDraftUsername] = useState("");
   const [draftPhone, setDraftPhone] = useState("");
   const [draftLocation, setDraftLocation] = useState("");
   const [draftBio, setDraftBio] = useState("");
   const [draftYears, setDraftYears] = useState<string>("");
+   const { theme } = useTheme(); 
+  const isDark = theme === "dark";
 
   useEffect(() => {
     let mounted = true;
@@ -56,7 +57,7 @@ function TechProfile() {
   }, []);
 
   const openEditor = () => {
-    // Switch to Overview and enable edit mode; header stays read-only
+    
     setActivePage("overview");
     setEditError(null);
     if (profile) {
@@ -101,7 +102,7 @@ function TechProfile() {
         years_experience: draftYears.trim() === "" ? undefined : Number(draftYears),
       } as const;
       const updated = await updateCurrentTechnician(payload as any);
-      // If backend doesn't echo phone, preserve entered value locally
+      
       const patched = { ...updated, phone: (updated as any).phone ?? (updated as any).phone_number ?? draftPhone } as TechnicianProfile;
       setProfile(patched);
       setEditing(false);
@@ -113,7 +114,7 @@ function TechProfile() {
   };
 
   if (loading) {
-    // Render static shell to avoid jumpiness, no loading text
+    
     return (
       <div className="flex justify-center pt-24 px-6 pb-24">
         <div className="w-full max-w-5xl min-h-[60vh]" />
@@ -153,15 +154,21 @@ function TechProfile() {
                   : "AGABA Patrick"}
               </h2>
               <div className="flex space-x-8 mt-2">
-                <div className="space-y-4">
-                  <p className="px-4 py-0.5  border bg-[#FFF9F9] border-gray-300 text-sm text-gray-700 rounded-full inline-block">
-                    Technician
-                  </p>
-                  <div className="flex items-center text-gray-600 text-sm">
-                    <CiLocationOn className="mr-1 text-xl" />
-                    <span>{profile?.location || "Kigali, Rwanda"}</span>
-                  </div>
-                </div>
+               <div className="space-y-4">
+  <p className={`px-4 py-0.5 border border-gray-300 text-sm rounded-full inline-block ${
+    isDark 
+      ? "bg-gray-700 text-gray-200" 
+      : "bg-[#FFF9F9] text-gray-700"
+  }`}>
+    Technician
+  </p>
+  <div className={`flex items-center text-sm ${
+    isDark ? "text-gray-300" : "text-gray-600"
+  }`}>
+    <CiLocationOn className="mr-1 text-xl" />
+    <span>{profile?.location || "Kigali, Rwanda"}</span>
+  </div>
+</div>
 
                 <div className="space-y-5">
                   <div className="flex items-center text-sm text-gray-700">
@@ -197,52 +204,61 @@ function TechProfile() {
           </div>
         </div>
       </div>
+  <div className={`w-full flex items-center justify-between rounded-2xl p-1 mt-6 shadow-sm ${
+          isDark ? "bg-gray-800" : "bg-[#ECECF0]"
+        }`}>
+          <button
+            onClick={() => setActivePage("overview")}
+            className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
+              activePage === "overview"
+                ? "bg-white text-black shadow"
+                : isDark 
+                  ? "text-gray-300 hover:bg-gray-700 hover:text-white" 
+                  : "text-gray-700 hover:bg-white hover:text-black"
+            }`}
+          >
+            Overview
+          </button>
 
-      <div className="w-full flex items-center justify-between bg-[#ECECF0] rounded-2xl p-1 mt-6 shadow-sm">
-        <button
-          onClick={() => setActivePage("overview")}
-          className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
-            activePage === "overview"
-              ? "bg-white text-black shadow"
-              : "hover:bg-white hover:text-black"
-          }`}
-        >
-          Overview
-        </button>
+          <button
+            onClick={() => setActivePage("contact")}
+            className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
+              activePage === "contact"
+                ? "bg-white text-black shadow"
+                : isDark 
+                  ? "text-gray-300 hover:bg-gray-700 hover:text-white" 
+                  : "text-gray-700 hover:bg-white hover:text-black"
+            }`}
+          >
+            Contact Info
+          </button>
 
-        <button
-          onClick={() => setActivePage("contact")}
-          className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
-            activePage === "contact"
-              ? "bg-white text-black shadow"
-              : "hover:bg-white hover:text-black"
-          }`}
-        >
-          Contact Info
-        </button>
+          <button
+            onClick={() => setActivePage("skills")}
+            className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
+              activePage === "skills"
+                ? "bg-white text-black shadow"
+                : isDark 
+                  ? "text-gray-300 hover:bg-gray-700 hover:text-white" 
+                  : "text-gray-700 hover:bg-white hover:text-black"
+            }`}
+          >
+            Skills & Certs
+          </button>
 
-        <button
-          onClick={() => setActivePage("skills")}
-          className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
-            activePage === "skills"
-              ? "bg-white text-black shadow"
-              : "hover:bg-white hover:text-black"
-          }`}
-        >
-          Skills & Certs
-        </button>
-
-        <button
-          onClick={() => setActivePage("reviews")}
-          className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
-            activePage === "reviews"
-              ? "bg-white text-black shadow"
-              : "hover:bg-white hover:text-black"
-          }`}
-        >
-          Reviews
-        </button>
-      </div>
+          <button
+            onClick={() => setActivePage("reviews")}
+            className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
+              activePage === "reviews"
+                ? "bg-white text-black shadow"
+                : isDark 
+                  ? "text-gray-300 hover:bg-gray-700 hover:text-white" 
+                  : "text-gray-700 hover:bg-white hover:text-black"
+            }`}
+          >
+            Reviews
+          </button>
+        </div>
 
       <div className="mt-6 space-y-4 no-anchor min-h-[70vh]">
         {activePage === "overview" && (
@@ -272,7 +288,7 @@ function TechProfile() {
         )}
         {activePage === "reviews" && <Reviews />}
       </div>
-      {/* Header remains read-only; editing happens in sections */}
+      
       </div>
     </div>
   );

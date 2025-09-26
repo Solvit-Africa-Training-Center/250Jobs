@@ -1,6 +1,6 @@
-
+import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext"; 
 import React from "react";
-import { Link } from "react-router-dom";
 
 interface HeroProps {
   activePage: "jobs" | "application" | "browserTech" | "reviews";
@@ -10,61 +10,74 @@ interface HeroProps {
 }
 
 function HeroEmployer({ activePage, setActivePage }: HeroProps) {
+  const { user } = useAuth();
+  const { theme } = useTheme(); 
+  const isDark = theme === "dark";
+
+  const tabs = [
+    { key: "jobs", label: "My Jobs" },
+    { key: "application", label: "Application" },
+    { key: "browserTech", label: "Browser Technicians" },
+    { key: "reviews", label: "Reviews" },
+  ];
+
   return (
-    <section className="px-4 md:px-16 pb-12 dark:text-gray-100">
-      <div className="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center justify-between gap-8">
-        <div className="flex-1 space-y-2">
-          <h1 className="text-4xl font-bold leading-tight text-black dark:text-gray-100">Employer Dashboard</h1>
-          <p className="text-gray-500 text-lg md:text-base dark:text-gray-400">
-            Manage your job postings and find the right talent
-          </p>
+    <section
+      className={`relative pt-12 pb-12 px-4 md:px-16 bg-no-repeat bg-cover bg-center ${
+        isDark ? "bg-gray-900" : "bg-white"
+      }`}
+    >
+      {/* Overlay */}
+      <div
+        className={`absolute inset-0 pointer-events-none ${
+          isDark ? "bg-gray-800" : "bg-[#F8FCFF]"
+        }`}
+      />
 
-          <div className="w-full flex items-center justify-between bg-[#ECECF0] dark:bg-gray-800 rounded-full p-1 mt-6">
-            <button
-              onClick={() => setActivePage("jobs")}
-              className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
-                activePage === "jobs" ? "bg-white text-black dark:bg-gray-900 dark:text-gray-100" : "hover:bg-white hover:text-black dark:hover:bg-gray-900 dark:hover:text-gray-100"
+      {/* Main content */}
+      <div className="relative max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="flex-1 space-y-6">
+          <div className="relative">
+            {/* Decorative circles */}
+            <div className="absolute -top-10 -left-10 w-72 h-72 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
+            <div className="absolute -bottom-10 -right-10 w-72 h-72 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
+
+            <h1
+              className={`relative text-4xl sm:text-5xl md:text-6xl font-extrabold leading-snug ${
+                isDark ? "text-white" : "text-gray-900"
               }`}
             >
-              My Jobs
-            </button>
+              Employer Dashboard
+            </h1>
+            <p className="text-gray-500 text-lg md:text-base">
+              Manage your job postings and find the right talent
+            </p>
+          </div>
 
-            <button
-              onClick={() => setActivePage("application")}
-              className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
-                activePage === "application" ? "bg-white text-black dark:bg-gray-900 dark:text-gray-100" : "hover:bg-white hover:text-black dark:hover:bg-gray-900 dark:hover:text-gray-100"
-              }`}
-            >
-              Application
-            </button>
-
-            <button
-              onClick={() => setActivePage("browserTech")}
-              className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
-                activePage === "browserTech" ? "bg-white text-black dark:bg-gray-900 dark:text-gray-100" : "hover:bg-white hover:text-black dark:hover:bg-gray-900 dark:hover:text-gray-100"
-              }`}
-            >
-              Browser Technicians
-            </button>
-
-            <button
-              onClick={() => setActivePage("reviews")}
-              className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
-                activePage === "reviews" ? "bg-white text-black dark:bg-gray-900 dark:text-gray-100" : "hover:bg-white hover:text-black dark:hover:bg-gray-900 dark:hover:text-gray-100"
-              }`}
-            >
-              Reviews
-            </button>
+          {/* Tabs/buttons */}
+          <div
+            className={`w-full flex items-center justify-between rounded-full p-1 mt-8 ${
+              isDark ? "bg-gray-700" : "bg-[#ECECF0]"
+            }`}
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActivePage(tab.key as any)}
+                className={`flex-1 mx-1 py-2 rounded-full font-semibold transition ${
+                  activePage === tab.key
+                    ? "bg-white text-black"
+                    : isDark
+                    ? "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white"
+                    : "bg-[#ECECF0] text-gray-700 hover:bg-white hover:text-black"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
-      <div className="max-w-7xl mx-auto flex justify-end mt-2">
-        <Link
-          to="/employer/messages"
-          className="inline-flex items-center px-5 py-2 bg-[#2984df] text-white font-semibold rounded-full hover:bg-blue-700 transition dark:bg-[#145ea8] dark:hover:bg-[#0f4c88]"
-        >
-          Messages
-        </Link>
       </div>
     </section>
   );

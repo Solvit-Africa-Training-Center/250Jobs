@@ -1,18 +1,15 @@
-
 import { IoTimeOutline } from "react-icons/io5";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { GoXCircle } from "react-icons/go";
 import { useEffect, useState } from "react";
-import { myApplications } from "../../api/jobs";
-import type { JobApplication, Paginated } from "../../types/job";
+import { myApplications, getJob } from "../../api/jobs";
+import type { JobApplication, Paginated, Job } from "../../types/job";
 import Button from "../../components/ui/Button";
 import Modal from "../../components/ui/Modal";
 import { useTheme } from "../../context/ThemeContext";
 import { CiLocationOn } from "react-icons/ci";
 import { MdOutlineWorkOutline } from "react-icons/md";
 import { LuDollarSign } from "react-icons/lu";
-import { getJob } from "../../api/jobs";
-import type { Job } from "../../types/job";
 
 function statusBadge(status: string) {
   const map: Record<string, { bg: string; text: string; label: string; icon?: JSX.Element }> = {
@@ -22,20 +19,35 @@ function statusBadge(status: string) {
     HIRED: { bg: "bg-green-100", text: "text-green-700", label: "Hired", icon: <IoMdCheckmarkCircleOutline className="text-2xl text-green-600" /> },
   };
   const s = map[status] || map["PENDING"];
-  return <span className={`inline-flex items-center px-4 h-8 text-xs font-medium ${s.bg} ${s.text} rounded-2xl`}>{s.icon}<span className="ml-1">{s.label}</span></span>;
+  return (
+    <span className={`inline-flex items-center px-4 h-8 text-xs font-medium ${s.bg} ${s.text} rounded-2xl`}>
+      {s.icon}
+      <span className="ml-1">{s.label}</span>
+    </span>
+  );
 }
-
-//
 
 function MyApplication() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const cardSurfaceClass = isDark ? "bg-gray-900 border border-gray-700 text-gray-100" : "bg-white border border-gray-300 text-gray-900";
+
+  // Theme-aware classes
+  const cardSurfaceClass = isDark
+    ? "bg-gray-900 border border-gray-700 text-gray-100"
+    : "bg-white border border-gray-300 text-gray-900";
+
+  const modalSurfaceClass = isDark
+    ? "bg-gray-900 text-gray-100"
+    : "bg-white text-gray-900";
+
+  const closeButtonClass = isDark ? "text-white" : "text-black";
+
   const mutedText = isDark ? "text-gray-400" : "text-gray-600";
-  const detailMutedText = isDark ? "text-gray-400" : "text-gray-500";
+  const detailMutedText = isDark ? "text-gray-400" : "text-gray-500";
   const detailStrongText = isDark ? "text-gray-100" : "text-gray-900";
   const detailIconClass = isDark ? "text-gray-400" : "text-gray-500";
   const detailBodyText = isDark ? "text-gray-200" : "text-gray-700";
+
   const [page, setPage] = useState(1);
   const [data, setData] = useState<Paginated<JobApplication> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,7 +112,9 @@ function MyApplication() {
     }
   };
 
-  useEffect(() => { fetchData(page); }, [page]);
+  useEffect(() => {
+    fetchData(page);
+  }, [page]);
 
   const employerResponseAt = getEmployerResponseAt(selected);
 
@@ -115,39 +129,41 @@ function MyApplication() {
           {loading && <div className="h-6" />}
           {error && <div className="text-red-600">{error}</div>}
 
-
-          {!loading && !error && data?.results.map((app) => (
-            <div
-              key={app.id}
-              className={`${cardSurfaceClass} rounded-2xl p-6`}
-              style={{ boxShadow: "0px 0px 0px 1px rgba(0, 0, 0, 0.08)" }}
-              onClick={() => openDetails(app)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter') openDetails(app); }}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className={`text-xl font-semibold ${detailStrongText}`}>{app.job_title}</h3>
-                  <div className={`mt-1 text-sm ${mutedText} flex items-center gap-2`}>
-                    <IoTimeOutline className={detailIconClass} />
-                    {(() => {
-                      const respondedAt = getEmployerResponseAt(app);
-                      return respondedAt
-                        ? <span>Employer responded {fmtDate(respondedAt)}</span>
-                        : <span>Employer response: -</span>;
-                    })()}
+          {!loading &&
+            !error &&
+            data?.results.map((app) => (
+              <div
+                key={app.id}
+                className={`${cardSurfaceClass} rounded-2xl p-6`}
+                style={{ boxShadow: "0px 0px 0px 1px rgba(0, 0, 0, 0.08)" }}
+                onClick={() => openDetails(app)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") openDetails(app);
+                }}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className={`text-xl font-semibold ${detailStrongText}`}>
+                      {app.job_title}
+                    </h3>
+                    <div className={`mt-1 text-sm ${mutedText} flex items-center gap-2`}>
+                      <IoTimeOutline className={detailIconClass} />
+                      {(() => {
+                        const respondedAt = getEmployerResponseAt(app);
+                        return respondedAt ? (
+                          <span>Employer responded {fmtDate(respondedAt)}</span>
+                        ) : (
+                          <span>Employer response: -</span>
+                        );
+                      })()}
+                    </div>
                   </div>
+                  <div className="shrink-0">{statusBadge(app.status)}</div>
                 </div>
-                <div className="shrink-0">{statusBadge(app.status)}</div>
               </div>
-
-              {/* Link removed; entire card already opens details on click */}
-            </div>
-          ))}
-
-          {/* Pagination controls removed as requested */}
-
+            ))}
         </div>
       </div>
 
@@ -156,12 +172,15 @@ function MyApplication() {
         onClose={closeDetails}
         title={selected ? selected.job_title : "Application details"}
         maxWidthClass="max-w-3xl"
+        closeButtonClass={closeButtonClass} 
       >
         {selected ? (
-          <div className={`space-y-6 ${detailStrongText}`}>
+          <div className={`space-y-6 rounded-2xl p-6 ${modalSurfaceClass}`}>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
-                <h3 className={`text-xl font-semibold ${detailStrongText}`}>{selected.job_title}</h3>
+                <h3 className={`text-xl font-semibold ${detailStrongText}`}>
+                  {selected.job_title}
+                </h3>
                 <div className={`mt-1 text-sm ${detailMutedText} flex items-center gap-2`}>
                   <IoTimeOutline className={detailIconClass} />
                   <span>Applied {fmtDate(selected.created_at, true)}</span>
@@ -215,8 +234,12 @@ function MyApplication() {
                 </div>
 
                 <div>
-                  <h4 className={`text-sm font-semibold ${detailStrongText} uppercase tracking-wide`}>Job Description</h4>
-                  <p className={`mt-2 whitespace-pre-line text-sm leading-relaxed ${detailBodyText}`}>
+                  <h4 className={`text-sm font-semibold ${detailStrongText} uppercase tracking-wide`}>
+                    Job Description
+                  </h4>
+                  <p
+                    className={`mt-2 whitespace-pre-line text-sm leading-relaxed ${detailBodyText}`}
+                  >
                     {jobDetail?.description || "No description provided."}
                   </p>
                 </div>
@@ -224,20 +247,36 @@ function MyApplication() {
             )}
 
             <div>
-              <h4 className={`text-sm font-semibold ${detailStrongText} uppercase tracking-wide`}>Your Application</h4>
-              <p className={`mt-2 whitespace-pre-line text-sm leading-relaxed ${detailBodyText}`}>
+              <h4 className={`text-sm font-semibold ${detailStrongText} uppercase tracking-wide`}>
+                Your Application
+              </h4>
+              <p
+                className={`mt-2 whitespace-pre-line text-sm leading-relaxed ${detailBodyText}`}
+              >
                 {selected.cover_letter || "No cover letter included."}
               </p>
             </div>
 
-            <div className="flex justify-end">
-              <Button variant="outline" onClick={closeDetails}>
-                Close
-              </Button>
-            </div>
+          <div className="flex justify-end">
+<Button
+  variant="primary" 
+  onClick={closeDetails}
+  className="!bg-white !text-black dark:!bg-gray-900 dark:!text-white border border-gray-300 dark:border-gray-700 hover:!bg-gray-100 dark:hover:!bg-gray-800"
+>
+  Close
+</Button>
+
+
+
+
+
+</div>
+
           </div>
         ) : (
-          <div className="text-sm text-gray-500">Select an application to view its details.</div>
+          <div className="text-sm text-gray-500">
+            Select an application to view its details.
+          </div>
         )}
       </Modal>
     </section>
@@ -245,5 +284,3 @@ function MyApplication() {
 }
 
 export default MyApplication;
-
-

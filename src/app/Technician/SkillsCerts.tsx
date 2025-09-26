@@ -5,10 +5,14 @@ import { getCurrentTechnician, updateCurrentTechnician, uploadCertificate } from
 import type { TechnicianProfile } from "../../types/technician";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import { useTheme } from "../../context/ThemeContext"; 
 
 type Props = { onUpdated?: (p: TechnicianProfile) => void; editMode?: boolean };
 
 export default function SkillsCerts({ onUpdated, editMode }: Props) {
+  const { theme } = useTheme(); 
+  const isDark = theme === "dark"; 
+
   const [profile, setProfile] = useState<TechnicianProfile | null>(null);
   const [newSkill, setNewSkill] = useState("");
   const [saving, setSaving] = useState(false);
@@ -19,8 +23,6 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
   const [localCertUrl, setLocalCertUrl] = useState<string | null>(null);
   const [localCertDataUrl, setLocalCertDataUrl] = useState<string | null>(null);
   const [serverCertOk, setServerCertOk] = useState<boolean | null>(null);
-  // keep track of a preview of the current file selection
-  // (existing previewUrl covers single-selection preview)
 
   const storageKey = useMemo(() => {
     const uid = localStorage.getItem("authUserId");
@@ -31,22 +33,18 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
     return uid ? `technicianCertData:${uid}` : null;
   }, []);
   const lastDataKey = "technicianCertData:last";
-  // no list key now; single preview/upload only
 
   const load = async () => {
     setError(null);
     try {
       const me = await getCurrentTechnician();
       setProfile(me);
-      // Load cached URL fallback if backend path is absent
       if (!me?.certificates && storageKey) {
         const cached = localStorage.getItem(storageKey);
         if (cached) setLocalCertUrl(cached);
       }
-      // Load cached data URI (works offline / no backend media serving)
       const cachedData = storageKeyData ? localStorage.getItem(storageKeyData) : localStorage.getItem(lastDataKey);
       if (cachedData) setLocalCertDataUrl(cachedData);
-      // skip loading lists — we only show primary and a single preview
     } catch (e: any) {
       setError(e?.message || "Failed to load profile");
     }
@@ -110,17 +108,11 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
         localStorage.setItem(storageKey, updated.certificates);
         setLocalCertUrl(updated.certificates);
       }
-      // Persist data URI so it can be viewed without hitting backend
       if (storageKeyData && localCertDataUrl) {
         localStorage.setItem(storageKeyData, localCertDataUrl);
         localStorage.setItem(lastDataKey, localCertDataUrl);
       }
       setMessage("Certificate uploaded");
-      // Persist preview data URL so it survives reloads (single)
-      if (storageKeyData && localCertDataUrl) {
-        localStorage.setItem(storageKeyData, localCertDataUrl);
-        localStorage.setItem(lastDataKey, localCertDataUrl);
-      }
     } catch (e: any) {
       setError(e?.message || "Failed to upload certificate");
     } finally {
@@ -132,52 +124,34 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
     if (!files || files.length === 0) return;
     const first = files[0];
     setCertFile(first);
-    // preview only the first selected file
-    try {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      const url = URL.createObjectURL(first);
-      setPreviewUrl(url);
-    } catch {}
-    // also keep a data URL for upload confirmation (single)
-    try {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = typeof reader.result === 'string' ? reader.result : null;
-        if (!result) return;
-        setLocalCertDataUrl(result);
-      };
-      reader.readAsDataURL(first);
-    } catch {}
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    const url = URL.createObjectURL(first);
+    setPreviewUrl(url);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : null;
+      if (!result) return;
+      setLocalCertDataUrl(result);
+    };
+    reader.readAsDataURL(first);
   };
 
   const isImageUrl = (url: string) => {
     if (!url) return false;
     const lower = url.toLowerCase();
-    return (
-      lower.startsWith("data:image/") ||
-      lower.endsWith(".png") ||
-      lower.endsWith(".jpg") ||
-      lower.endsWith(".jpeg") ||
-      lower.endsWith(".gif") ||
-      lower.endsWith(".webp") ||
-      lower.endsWith(".bmp")
-    );
+    return lower.startsWith("data:image/") || lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".gif") || lower.endsWith(".webp") || lower.endsWith(".bmp");
   };
 
   const fixLegacyCertPath = (url?: string | null) => {
     if (!url) return url || null;
-    // If backend previously returned /certs/... map to /media/certs/ for dev
     if (url.startsWith('/certs/')) return `/media${url}`;
     return url;
   };
 
-  // Verify server certificate link actually resolves; hide server link if 404
   useEffect(() => {
     const url = fixLegacyCertPath(profile?.certificates);
-    if (!url) {
-      setServerCertOk(null);
-      return;
-    }
+    if (!url) { setServerCertOk(null); return; }
     let cancelled = false;
     const check = async () => {
       try {
@@ -203,31 +177,35 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
 
   return (
     <div>
-      <div className="bg-white rounded-2xl p-6 border border-gray-300 mb-6 shadow-sm">
-        <h3 className="text-xl font-semibold text-gray-900 mb-1">Skills</h3>
-        <p className="text-gray-500 mb-5">Showcase your technical abilities</p>
+      <div className={`rounded-2xl p-6 border mb-6 shadow-sm ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}>
+        <h3 className={`text-xl font-semibold mb-1 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Skills</h3>
+        <p className={`mb-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Showcase your technical abilities</p>
 
         {error && <div className="text-red-600 mb-2">{error}</div>}
         {message && <div className="text-green-600 mb-2">{message}</div>}
 
         <div className="flex flex-wrap gap-3">
-          {(profile?.skills || []).map((s) => (
-            <span key={s.id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#f5f5fc] border border-gray-200 text-gray-800 rounded-full text-sm font-medium">
-              {s.name}
-              {editMode && (
-                <button
-                  type="button"
-                  aria-label={`Remove ${s.name}`}
-                  className="w-5 h-5 inline-flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700"
-                  onClick={() => onRemoveSkill(s.name)}
-                  disabled={saving}
-                  title="Remove"
-                >
-                  ×
-                </button>
-              )}
-            </span>
-          ))}
+          {(profile?.skills || []).map((s) => {
+            const bgClass = isDark ? "bg-gray-800 border-gray-700 text-gray-100" : "bg-[#f5f5fc] border-gray-200 text-gray-800";
+            const removeBtnBg = isDark ? "bg-gray-700 hover:bg-gray-600 text-gray-200" : "bg-gray-200 hover:bg-gray-300 text-gray-700";
+            return (
+              <span key={s.id} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border ${bgClass}`}>
+                {s.name}
+                {editMode && (
+                  <button
+                    type="button"
+                    aria-label={`Remove ${s.name}`}
+                    className={`w-5 h-5 inline-flex items-center justify-center rounded-full ${removeBtnBg}`}
+                    onClick={() => onRemoveSkill(s.name)}
+                    disabled={saving}
+                    title="Remove"
+                  >
+                    ×
+                  </button>
+                )}
+              </span>
+            );
+          })}
           {!profile?.skills?.length && <span className="text-gray-500">No skills yet. Add your first skill.</span>}
         </div>
 
@@ -242,12 +220,13 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 border border-gray-300 mb-6 shadow-sm">
+    
+      <div className={`rounded-2xl p-6 border mb-6 shadow-sm ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}>
         <div className="flex items-center gap-2 mb-2">
-          <LiaCertificateSolid className="text-2xl text-black" />
-          <h3 className="text-xl font-semibold text-gray-900">Certifications</h3>
+          <LiaCertificateSolid className={`text-2xl ${isDark ? 'text-gray-100' : 'text-black'}`} />
+          <h3 className={`text-xl font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Certifications</h3>
         </div>
-        <p className="text-gray-500 mb-5">Your professional certifications and licenses</p>
+        <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'} mb-5`}>Your professional certifications and licenses</p>
 
         <div className="flex flex-col gap-3">
           {previewUrl && (
@@ -269,20 +248,20 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
                     className="border-red-300 !text-red-700 hover:!bg-red-50 hover:!text-red-800 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200 transition-colors"
                     leftIcon={<FiTrash2 className="text-red-600" />}
                     onClick={async () => {
-                    try {
-                      setSaving(true);
-                      const updated = await updateCurrentTechnician({ certificates: null } as any);
-                      setProfile(updated);
-                      onUpdated && onUpdated(updated);
-                      setMessage("Certificate removed");
-                      setLocalCertUrl(null);
-                      if (storageKey) localStorage.removeItem(storageKey);
-                    } catch (e: any) {
-                      setError(e?.message || 'Failed to remove certificate');
-                    } finally {
-                      setSaving(false);
-                    }
-                  }}>Remove</Button>
+                      try {
+                        setSaving(true);
+                        const updated = await updateCurrentTechnician({ certificates: null } as any);
+                        setProfile(updated);
+                        onUpdated && onUpdated(updated);
+                        setMessage("Certificate removed");
+                        setLocalCertUrl(null);
+                        if (storageKey) localStorage.removeItem(storageKey);
+                      } catch (e: any) {
+                        setError(e?.message || 'Failed to remove certificate');
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}>Remove</Button>
                 )}
               </div>
             ) : (
@@ -297,25 +276,24 @@ export default function SkillsCerts({ onUpdated, editMode }: Props) {
                     className="border-red-300 !text-red-700 hover:!bg-red-50 hover:!text-red-800 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200 transition-colors"
                     leftIcon={<FiTrash2 className="text-red-600" />}
                     onClick={async () => {
-                    try {
-                      setSaving(true);
-                      const updated = await updateCurrentTechnician({ certificates: null } as any);
-                      setProfile(updated);
-                      onUpdated && onUpdated(updated);
-                      setMessage("Certificate removed");
-                    } catch (e: any) {
-                      setError(e?.message || 'Failed to remove certificate');
-                    } finally {
-                      setSaving(false);
-                    }
-                  }}>Remove</Button>
+                      try {
+                        setSaving(true);
+                        const updated = await updateCurrentTechnician({ certificates: null } as any);
+                        setProfile(updated);
+                        onUpdated && onUpdated(updated);
+                        setMessage("Certificate removed");
+                      } catch (e: any) {
+                        setError(e?.message || 'Failed to remove certificate');
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}>Remove</Button>
                 )}
               </div>
             )
           ) : (
             <span className="text-gray-500">{serverCertOk === false ? 'Certificate link unavailable on server. Please re-upload.' : 'No certificate uploaded.'}</span>
           )}
-          
         </div>
 
         <div className="mt-4 flex items-center gap-2">

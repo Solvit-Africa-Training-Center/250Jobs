@@ -1,5 +1,5 @@
 ﻿import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../context/ThemeContext"; // your theme context
+import { useTheme } from "../../context/ThemeContext"; 
 
 interface HeroProps {
   activePage: "available" | "application";
