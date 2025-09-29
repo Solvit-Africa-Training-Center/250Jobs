@@ -14,7 +14,14 @@ export interface TechnicianProfile {
   rating_count?: number;
   skills?: Skill[];
   certificates?: string | null;
+  national_id_document?: string | null;
+  criminal_record?: string | null;
+  criminal_record_uploaded_at?: string | null;
+  criminal_record_expires_at?: string | null;
+  criminal_record_is_expired?: boolean;
+  criminal_record_expiry_notice?: string;
 }
+
 
 export type TechnicianProfileUpdate = Partial<{
   first_name: string;
@@ -25,4 +32,7 @@ export type TechnicianProfileUpdate = Partial<{
   years_experience: number;
   location: string;
   skill_names: string[];
+  certificates: null;
+  criminal_record: null;
+  national_id_document: null;
 }>;

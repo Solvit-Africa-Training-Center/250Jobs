@@ -1,4 +1,5 @@
 import http from "../lib/http";
+import type { Skill } from "../types/technician";
 
 // Types
 export type AdminUser = {
@@ -22,9 +23,20 @@ export type AdminTechnician = {
   id: number;
   user: number;
   user_username: string;
+  user_first_name?: string;
+  user_last_name?: string;
+  user_email?: string;
+  user_phone_number?: string;
   bio?: string;
   years_experience?: number;
   location?: string;
+  skills?: Skill[];
+  certificates?: string | null;
+  criminal_record?: string | null;
+  criminal_record_uploaded_at?: string | null;
+  criminal_record_expires_at?: string | null;
+  criminal_record_expiry_notice?: string | null;
+  national_id_document?: string | null;
   is_approved: boolean;
   is_paused: boolean;
   trial_ends_at?: string | null;

@@ -281,6 +281,7 @@ function TechProfile() {
             setDraftPhone={setDraftPhone}
             draftLocation={draftLocation}
             setDraftLocation={setDraftLocation}
+            onProfileChange={(updated) => setProfile(updated)}
           />
         )}
         {activePage === "skills" && (

@@ -55,7 +55,7 @@ export default function EmployerProfile() {
   if (loading) return <div className="pt-24 px-6">Loading...</div>;
 
   return (
-    <div className="pt-24 px-6">
+    <div className="pt-24 px-6 m- m-16 ">
       <div className="bg-white rounded-2xl p-6 transition border border-gray-300" style={{ boxShadow: "0px 1px 1px rgba(0,0,0,0.1)" }}>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Company Profile</h2>
         <p className="text-gray-500 mb-4">Update your company details</p>

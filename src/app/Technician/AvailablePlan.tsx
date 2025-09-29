@@ -1,21 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { FiUsers, FiCheck } from "react-icons/fi";
-import AskedQuestions from "./AskedQuestions";
 import { FaToggleOff } from "react-icons/fa6";
+import AskedQuestions from "./AskedQuestions";
 import { listPlans, initSubscribe, type Plan } from "../../api/payments";
 import Button from "../../components/ui/Button";
 
 export default function AvailablePlan() {
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   const isYearly = cycle === "yearly";
-  const premiumPrice = isYearly ? Math.round(15000 * 1.17) : 15000;
-  const professionalPrice = isYearly ? Math.round(25000 * 1.17) : 25000;
-  const priceSuffix = isYearly ? "year" : "month";
+
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [planError, setPlanError] = useState<string | null>(null);
   const [submittingId, setSubmittingId] = useState<number | null>(null);
 
+  // Load plans
   useEffect(() => {
     (async () => {
       try {
@@ -30,6 +29,7 @@ export default function AvailablePlan() {
     })();
   }, []);
 
+  // Map plans by duration
   const planByMonths = useMemo(() => {
     const map: Record<number, Plan> = {};
     for (const p of plans) map[p.duration_months] = p;
@@ -52,34 +52,41 @@ export default function AvailablePlan() {
       setSubmittingId(null);
     }
   };
-  return (
-    <div>
 
-      {/* Monthly/Yearly Toggle */}
-      <div className="flex items-center justify-center mt-10">
-        <div className="flex items-center gap-4 bg-white rounded-full px-6 py-2 border border-gray-300">
+  return (
+    <div className="w-full flex flex-col items-center">
+      {/* ===== Toggle Section ===== */}
+      <div className="flex justify-center mt-10">
+        <div className="flex items-center gap-4 bg-white rounded-full px-6 py-2 border border-gray-300 shadow-sm">
           <button
-            type="button"
             onClick={() => setCycle("monthly")}
             className="font-semibold focus:outline-none"
           >
-            <span className={isYearly ? "text-gray-500" : "text-black"}>Monthly</span>
+            <span className={isYearly ? "text-gray-500" : "text-black"}>
+              Monthly
+            </span>
           </button>
+
           <button
-            type="button"
             aria-label="Toggle billing cycle"
+            title="Toggle Monthly/Yearly"
             onClick={() => setCycle(isYearly ? "monthly" : "yearly")}
             className="focus:outline-none"
-            title="Toggle Monthly/Yearly"
           >
-            <FaToggleOff className={`text-3xl transition-transform ${isYearly ? "text-blue-500 rotate-180" : "text-gray-400"}`} />
+            <FaToggleOff
+              className={`text-3xl transition-transform ${
+                isYearly ? "text-blue-500 rotate-180" : "text-gray-400"
+              }`}
+            />
           </button>
+
           <button
-            type="button"
             onClick={() => setCycle("yearly")}
             className="font-semibold focus:outline-none flex items-center gap-2"
           >
-            <span className={isYearly ? "text-black" : "text-gray-500"}>Yearly</span>
+            <span className={isYearly ? "text-black" : "text-gray-500"}>
+              Yearly
+            </span>
             <span className="text-xs bg-gray-200 text-black px-3 py-1 rounded-full font-semibold">
               Save 17%
             </span>
@@ -87,12 +94,12 @@ export default function AvailablePlan() {
         </div>
       </div>
 
-      {/* Plan Cards */}
-      <div className="flex flex-col md:flex-row justify-center items-start gap-6 mt-10 px-4 md:px-0">
+      {/* ===== Plan Cards ===== */}
+      <div className="mt-10 flex flex-wrap justify-center gap-8 px-4">
         {loadingPlans && <div className="text-gray-600">Loading plans...</div>}
         {planError && <div className="text-red-600">{planError}</div>}
 
-        {/* Free Plan */}
+        {/* ----- Free Plan ----- */}
         <div className="w-80 bg-white rounded-2xl h-[550px] p-6 border border-gray-300 shadow-sm flex flex-col justify-between">
           <div>
             <div className="text-center mb-3">
@@ -135,7 +142,7 @@ export default function AvailablePlan() {
           </button>
         </div>
 
-        {/* Premium Plan */}
+        {/* ----- Premium Plan ----- */}
         <div className="w-80 h-[580px] bg-white rounded-2xl p-6 border border-blue-700 shadow-lg flex flex-col justify-between -mt-4 -mb-4">
           <div>
             <div className="text-center mb-3">
@@ -146,7 +153,8 @@ export default function AvailablePlan() {
               Best for active job seekers
             </p>
             <h2 className="text-2xl font-bold text-gray-800 mb-1 text-center">
-              {(planByMonths[1]?.currency || 'RWF')} {Number(planByMonths[1]?.price || 0).toLocaleString()}
+              {(planByMonths[1]?.currency || "RWF")}{" "}
+              {Number(planByMonths[1]?.price || 0).toLocaleString()}
               <span className="text-gray-400 text-sm">/month</span>
             </h2>
             <p className="text-gray-400 mb-4 text-center">7-day free trial</p>
@@ -177,36 +185,56 @@ export default function AvailablePlan() {
             </ul>
           </div>
 
-          <Button onClick={() => onSubscribeByMonths(1)} loading={submittingId === planByMonths[1]?.id}>
+          <Button
+            onClick={() => onSubscribeByMonths(1)}
+            loading={submittingId === planByMonths[1]?.id}
+          >
             Subscribe
           </Button>
         </div>
 
-        {/* 6-Month Plan (dynamic) */}
+        {/* ----- 6-Month Plan ----- */}
         <div className="w-80 bg-white rounded-2xl p-6 border border-gray-300 shadow-sm flex flex-col justify-between">
           <div>
             <div className="text-center mb-3">
               <FiUsers className="text-2xl text-indigo-600 mx-auto mb-1" />
-              <h3 className="text-lg font-semibold text-gray-900">{planByMonths[6]?.name || '6-Month Plan'}</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {planByMonths[6]?.name || "6-Month Plan"}
+              </h3>
             </div>
-            <p className="text-gray-600 text-sm mb-4 text-center">Billed every 6 months</p>
+            <p className="text-gray-600 text-sm mb-4 text-center">
+              Billed every 6 months
+            </p>
             <h2 className="text-2xl font-bold text-gray-800 mb-1 text-center">
-              {(planByMonths[6]?.currency || 'RWF')} {Number(planByMonths[6]?.price || 0).toLocaleString()}
+              {(planByMonths[6]?.currency || "RWF")}{" "}
+              {Number(planByMonths[6]?.price || 0).toLocaleString()}
             </h2>
 
             <p className="font-semibold text-gray-800 mb-2">Features included:</p>
             <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-center gap-2"><FiCheck className="text-green-600" /> Everything in Monthly</li>
-              <li className="flex items-center gap-2"><FiCheck className="text-green-600" /> Better savings</li>
-              <li className="flex items-center gap-2"><FiCheck className="text-green-600" /> Priority support</li>
+              <li className="flex items-center gap-2">
+                <FiCheck className="text-green-600" /> Everything in Monthly
+              </li>
+              <li className="flex items-center gap-2">
+                <FiCheck className="text-green-600" /> Better savings
+              </li>
+              <li className="flex items-center gap-2">
+                <FiCheck className="text-green-600" /> Priority support
+              </li>
             </ul>
           </div>
-          <Button className="mt-6" variant="outline" onClick={() => onSubscribeByMonths(6)} loading={submittingId === planByMonths[6]?.id}>
+
+          <Button
+            className="mt-6"
+            variant="outline"
+            onClick={() => onSubscribeByMonths(6)}
+            loading={submittingId === planByMonths[6]?.id}
+          >
             Subscribe
           </Button>
         </div>
 
-        {/* Professional Plan */}
+        {/* ----- Professional Plan ----- */}
         <div className="w-80 bg-white rounded-2xl h-[550px] p-6 border border-gray-300 shadow-sm flex flex-col justify-between">
           <div>
             <div className="text-center mb-3">
@@ -217,7 +245,8 @@ export default function AvailablePlan() {
               For established professionals
             </p>
             <h2 className="text-2xl font-bold text-gray-800 mb-1 text-center">
-              {(planByMonths[12]?.currency || 'RWF')} {Number(planByMonths[12]?.price || 0).toLocaleString()}
+              {(planByMonths[12]?.currency || "RWF")}{" "}
+              {Number(planByMonths[12]?.price || 0).toLocaleString()}
               <span className="text-gray-400 text-sm">/year</span>
             </h2>
             <p className="text-gray-400 mb-4 text-center">14-day free trial</p>
@@ -250,15 +279,20 @@ export default function AvailablePlan() {
               </li>
             </ul>
           </div>
-          <Button className="mt-10" variant="outline" onClick={() => onSubscribeByMonths(12)} loading={submittingId === planByMonths[12]?.id}>
+
+          <Button
+            className="mt-10"
+            variant="outline"
+            onClick={() => onSubscribeByMonths(12)}
+            loading={submittingId === planByMonths[12]?.id}
+          >
             Subscribe
           </Button>
         </div>
-
       </div>
 
-      {/* Feature Comparison */}
-      <div className="flex flex-col items-center p-6 mt-12">
+      {/* ===== Feature Comparison ===== */}
+      <div className="flex flex-col items-center p-6 mt-12 w-full">
         <h2 className="text-2xl font-bold text-center mb-6">
           Feature Comparison
         </h2>
@@ -304,7 +338,6 @@ export default function AvailablePlan() {
         </div>
 
         <AskedQuestions />
-
       </div>
     </div>
   );

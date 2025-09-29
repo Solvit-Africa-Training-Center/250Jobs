@@ -13,11 +13,14 @@ export interface TechnicianMini {
   user_id: number;
   first_name: string;
   last_name: string;
+  bio?: string;
   location?: string;
   years_experience?: number;
-  rating_avg?: number;
+  rating_avg?: number | string;
   rating_count?: number;
   skills: SkillMini[];
+  certificates?: string | null;
+  latest_review_comment?: string | null;
   is_approved: boolean;
 }
 

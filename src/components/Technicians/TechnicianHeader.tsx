@@ -53,7 +53,7 @@ function TechnicianHeader() {
 
   const navLinks = [
     { name: "Dashboard", href: "/", icon: <MdSpaceDashboard />, useRouter: true },
-    { name: "AI Assistant", href: "/Assistant", icon: <LuBot />, useRouter: true },
+    // { name: "AI Assistant", href: "/Assistant", icon: <LuBot />, useRouter: true },
     { name: "Profile", href: "/techprofile", icon: <FaRegUser />,  useRouter: true},
     { name: "Messages", href: "/message", icon: <FaRegMessage />,  useRouter: true },
     { name: "Subscription", href: "/subscription", icon: <MdOutlineSubscriptions />, useRouter: true },

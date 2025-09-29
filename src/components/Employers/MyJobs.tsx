@@ -104,7 +104,7 @@ function MyJobs() {
   };
 
   return (
-    <div className=" pt-6 ml-8 flex flex-col-reverse md:flex-row items-start gap-8 px-4 md:px-16 pb-12 text-gray-900 ">
+    <div className=" pt-6 ml-9 flex flex-col-reverse md:flex-row items-start gap-8 px-4 md:px-16 pb-12 text-black">
       <div className="flex-1 space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-gray-900">Posted Jobs</h2>

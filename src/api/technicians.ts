@@ -20,6 +20,24 @@ export async function uploadCertificate(file: File): Promise<TechnicianProfile> 
   return res.data;
 }
 
+export async function uploadCriminalRecord(file: File): Promise<TechnicianProfile> {
+  const form = new FormData();
+  form.append("criminal_record", file);
+  const res = await http.patch<TechnicianProfile>("/technicians/me/", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+}
+
+export async function uploadNationalIdDocument(file: File): Promise<TechnicianProfile> {
+  const form = new FormData();
+  form.append("national_id_document", file);
+  const res = await http.patch<TechnicianProfile>("/technicians/me/", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+}
+
 export interface ReviewItem {
   id: number;
   technician: number;

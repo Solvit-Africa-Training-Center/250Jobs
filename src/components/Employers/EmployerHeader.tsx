@@ -2,17 +2,17 @@ import Header from "../Layout/Header";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { listRooms, type Room } from "../../api/chat";
-import { MdSpaceDashboard, MdOutlineSubscriptions } from "react-icons/md";
-import { LuBot } from "react-icons/lu";
+import { MdSpaceDashboard } from "react-icons/md";
+// import { LuBot } from "react-icons/lu";
 import { FaRegUser } from "react-icons/fa";
 import { FaRegMessage } from "react-icons/fa6";
 
 const employerNavLinks = [
   { name: "Dashboard", href: "/employer/dashboard", icon: <MdSpaceDashboard />, useRouter: true },
-  { name: "AI Assistant", href: "/employer/assistant", icon: <LuBot />, useRouter: true },
+  // { name: "AI Assistant", href: "/employer/assistant", icon: <LuBot />, useRouter: true },
   { name: "Profile", href: "/employer/profile", icon: <FaRegUser />, useRouter: true },
   { name: "Messages", href: "/employer/messages", icon: <FaRegMessage />, useRouter: true },
-  { name: "Subscription", href: "/employer/subscription", icon: <MdOutlineSubscriptions />, useRouter: true },
+  // { name: "Subscription", href: "/employer/subscription", icon: <MdOutlineSubscriptions />, useRouter: true },
 ];
 
 function EmployerHeader() {

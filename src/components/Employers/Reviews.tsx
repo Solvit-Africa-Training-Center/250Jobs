@@ -99,12 +99,12 @@ function Reviews() {
   };
 
   return (
-    <div className="flex flex-col-reverse md:flex-row items-start gap-8 px-4 md:px-16 pb-12 dark:text-gray-100">
+    <div className="flex flex-col-reverse md:flex-row items-start gap-8 px-4 md:px-16 pb-12  ml-9  pt-6">
       <div className="flex-1 space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-black dark:text-gray-100">Technician Reviews</h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">Share feedback with technicians you have worked with.</p>
+            <h2 className="text-2xl font-bold text-black">Technician Reviews</h2>
+            <p className="text-gray-500 text-sm">Share feedback with technicians you have worked with.</p>
           </div>
           <div className="w-full md:w-72">
             <Input
@@ -115,22 +115,22 @@ function Reviews() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Write a review</h3>
           {techLoading ? (
-            <div className="text-gray-600 dark:text-gray-300">Loading technicians...</div>
+            <div className="text-gray-600">Loading technicians...</div>
           ) : techError ? (
             <div className="text-red-600">{techError}</div>
           ) : technicians.length === 0 ? (
-            <div className="text-gray-500 dark:text-gray-400">No technicians available yet.</div>
+            <div className="text-gray-500">No technicians available yet.</div>
           ) : (
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Technician</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Technician</label>
                 <select
                   value={selectedId ?? ""}
                   onChange={(e) => setSelectedId(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {filteredTechnicians.length === 0 && <option value="">No matches</option>}
                   {filteredTechnicians.map((tech) => (
@@ -142,7 +142,7 @@ function Reviews() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Rating</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
                 <div className="flex items-center gap-2">
                   {Array.from({ length: 5 }).map((_, index) => {
                     const value = index + 1;
@@ -159,17 +159,17 @@ function Reviews() {
                       </button>
                     );
                   })}
-                  <span className="text-sm text-gray-500 dark:text-gray-400">{rating} / 5</span>
+                  <span className="text-sm text-gray-500">{rating} / 5</span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Comment (optional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Comment (optional)</label>
                 <textarea
                   rows={4}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Share details about your experience"
                 />
               </div>
@@ -184,28 +184,28 @@ function Reviews() {
           )}
         </div>
 
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Recent feedback</h3>
             {selectedTechnician && (
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-gray-500">
                 Showing reviews for {selectedTechnician.first_name} {selectedTechnician.last_name}
               </span>
             )}
           </div>
 
           {reviewsLoading ? (
-            <div className="text-gray-600 dark:text-gray-300">Loading reviews...</div>
+            <div className="text-gray-600">Loading reviews...</div>
           ) : reviewsError ? (
             <div className="text-red-600">{reviewsError}</div>
           ) : !selectedId ? (
-            <div className="text-gray-500 dark:text-gray-400">Select a technician to see feedback.</div>
+            <div className="text-gray-500">Select a technician to see feedback.</div>
           ) : reviews.length === 0 ? (
-            <div className="text-gray-500 dark:text-gray-400">No reviews for this technician yet.</div>
+            <div className="text-gray-500">No reviews for this technician yet.</div>
           ) : (
             <div className="space-y-4">
               {reviews.map((review) => (
-                <div key={review.id} className="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                <div key={review.id} className="border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1877D3] text-white font-semibold">
                       {review.reviewer_username?.slice(0, 2).toUpperCase()}
@@ -221,12 +221,12 @@ function Reviews() {
                         ))}
                       </div>
                     </div>
-                    <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+                    <span className="ml-auto text-xs text-gray-500">
                       {new Date(review.created_at).toLocaleDateString()}
                     </span>
                   </div>
                   {review.comment && (
-                    <p className="mt-3 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-line">{review.comment}</p>
+                    <p className="mt-3 text-sm text-gray-700 whitespace-pre-line">{review.comment}</p>
                   )}
                 </div>
               ))}

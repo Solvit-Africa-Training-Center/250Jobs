@@ -201,7 +201,7 @@ export default function Register() {
         </div>
 
     
-        <Button
+        {/* <Button
           type="button"
           onClick={handleGoogleLogin}
           variant="secondary"
@@ -210,7 +210,7 @@ export default function Register() {
         >
           <FcGoogle size={20} />
           Sign in with Google
-        </Button>
+        </Button> */}
 
       
         <div className="mt-4 text-sm text-gray-600 text-center">

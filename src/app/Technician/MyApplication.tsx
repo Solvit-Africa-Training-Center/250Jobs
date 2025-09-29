@@ -119,7 +119,7 @@ function MyApplication() {
   const employerResponseAt = getEmployerResponseAt(selected);
 
   return (
-    <section className="pb-12">
+    <section className="pl-9 pt-6">
       <div className="flex flex-col md:flex-row items-start gap-8">
         <div className="flex-1 space-y-6">
           <div className="flex justify-between">

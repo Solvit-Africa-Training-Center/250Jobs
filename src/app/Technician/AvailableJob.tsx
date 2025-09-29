@@ -3,7 +3,7 @@ import { CiLocationOn } from "react-icons/ci";
 import { LuDollarSign } from "react-icons/lu";
 import { MdOutlineWorkOutline } from "react-icons/md";
 import { IoTimeOutline } from "react-icons/io5";
-import { FiEye, FiTv } from "react-icons/fi";
+import { FiEye } from "react-icons/fi";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import { applyToJob, getJob, listJobs, myApplications } from "../../api/jobs";
@@ -221,7 +221,7 @@ function AvailableJobs() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>Job Opportunities</h2>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
-              <button
+              {/* <button
                 className={`flex items-center gap-2 px-4 py-2 font-semibold rounded-md border ${
                   isDark
                     ? 'bg-gray-800 border-gray-700 text-gray-100 hover:bg-gray-700'
@@ -230,7 +230,7 @@ function AvailableJobs() {
               >
                 <FiTv className="text-lg" />
                 <span className="hidden sm:inline">AI Job Search</span>
-              </button>
+              </button> */}
               <div className="flex gap-2 w-full sm:w-auto">
                 <div className="flex-1 sm:w-64 min-w-0"> 
                   <Input
